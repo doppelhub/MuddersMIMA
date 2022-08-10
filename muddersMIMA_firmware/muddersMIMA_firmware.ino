@@ -11,7 +11,7 @@ void setup()
 	gpio_begin();
 	Serial.begin(115200); //USB
 
-	Serial.print(F("\n\nWelcome to LiMIMA v" FW_VERSION ", " BUILD_DATE "\nType '$HELP' for more info\n"));
+	Serial.print(F("\n\nWelcome to muddersMIMA v" FW_VERSION ", " BUILD_DATE "\nType '$HELP' for more info\n"));
 
 	gpio_turnBuzzer_on();
 	delay(1000);
@@ -22,7 +22,7 @@ void loop()
 {
 	blinkLED();
 
-	debugUSB_printButtonStates();
+	debugUSB_printLatestData();
 
 	USB_userInterface_handler();
 

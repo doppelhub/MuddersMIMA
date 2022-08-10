@@ -32,7 +32,8 @@ void printHelp(void)
 {
 	Serial.print(F("\n\nLiBCM commands:"
 		"\n -'$TEST1'/2/3/4: run test code. See 'USB_userInterface_runTestCode()')"
-		"\n -'$LOOP: LiBCM loop period. '$LOOP=___' to set (1 to 255 ms)"
+		"\n -'$LOOP: main while loop period. '$LOOP=___' to set (1 to 255 ms)"
+		"\n -'$DISP=BUT'/OFF. Choose which data to display."
 		"\n"
 		//add new commands to "USB_userInterface_executeUserInput()"
 		));
@@ -88,6 +89,13 @@ void USB_userInterface_executeUserInput(void)
 				Serial.print(F("\nLoop period is (ms): "));
 				Serial.print(time_loopPeriod_ms_get(),DEC);
 			}
+		}
+
+		//DISP
+		else if( (line[1] == 'D') && (line[2] == 'I') && (line[3] == 'S') && (line[4] == 'P') && (line[5] == '=') )
+		{
+			if     ( (line[6] == 'B') && (line[7] == 'U') && (line[8] == 'T') ) { debugUSB_dataTypeToStream_set(DEBUGUSB_STREAM_BUTTON); }
+			else if( (line[6] == 'O') && (line[7] == 'F') && (line[8] == 'F') ) { debugUSB_dataTypeToStream_set(DEBUGUSB_STREAM_NONE);   }
 		}
 
 		//$DEFAULT
