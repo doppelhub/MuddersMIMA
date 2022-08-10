@@ -26,5 +26,6 @@
   #include "time.h"
   #include "USB_userInterface.h"
   #include "ecm_signals.h"
+  #include "mcm_signals.h"
 
 #endif

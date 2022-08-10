@@ -26,5 +26,12 @@ void loop()
 
 	USB_userInterface_handler();
 
+	//pass ECM signals unmodified to MCM
+	//This will be "mode 0" initially (so I can turn system off if needed)
+	mcm_setMAMODE1_state  (ecm_getMAMODE1_state()  );
+	//mcm_setMAMODE1_percent(ecm_getMAMODE1_percent());
+	mcm_setMAMODE2_state  (ecm_getMAMODE2_state()  );
+	mcm_setCMDPWR_percent (ecm_getCMDPWR_percent() );
+
 	time_waitForLoopPeriod(); //wait here until next iteration
 }
