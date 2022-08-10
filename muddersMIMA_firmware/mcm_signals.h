@@ -14,4 +14,6 @@
 	void mcm_setMAMODE2_state(uint8_t newState);
 	void mcm_setCMDPWR_percent(uint8_t newPercent);
 
+	void mcm_setAllSignals(uint8_t newState, uint16_t CMDPWR_counts);
+
 #endif

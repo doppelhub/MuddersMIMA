@@ -26,12 +26,42 @@ void loop()
 
 	USB_userInterface_handler();
 
-	//pass ECM signals unmodified to MCM
-	//This will be "mode 0" initially (so I can turn system off if needed)
-	mcm_setMAMODE1_state  (ecm_getMAMODE1_state()  );
-	//mcm_setMAMODE1_percent(ecm_getMAMODE1_percent());
-	mcm_setMAMODE2_state  (ecm_getMAMODE2_state()  );
-	mcm_setCMDPWR_percent (ecm_getCMDPWR_percent() );
+	if(gpio_getButton_toggle() == TOGGLE_POSITION0)
+	{
+		//pass ECM signals unmodified to MCM
+		mcm_setMAMODE1_state  (ecm_getMAMODE1_state()  );
+		//mcm_setMAMODE1_percent(ecm_getMAMODE1_percent());
+		mcm_setMAMODE2_state  (ecm_getMAMODE2_state()  );
+		mcm_setCMDPWR_percent (ecm_getCMDPWR_percent() );
+	}
+	else if(gpio_getButton_toggle() == TOGGLE_POSITION1)
+	{
+		//manual IMA mode
+		uint16_t joystick_counts = adc_readJoystick_rawCounts();
+
+		if     (joystick_counts < JOYSTICK_MIN_COUNTS)         { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_COUNTS); } //signal too low
+		else if(joystick_counts < JOYSTICK_NEUTRAL_MIN_COUNTS) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN,  joystick_counts);             } //manual regen
+		else if(joystick_counts < JOYSTICK_NEUTRAL_MAX_COUNTS) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   joystick_counts);             } //standby
+		else if(joystick_counts < JOYSTICK_MAX_COUNTS)         { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, joystick_counts);             } //manual assist
+		else                                                   { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_COUNTS); } //signal too high
+	}
+	else if(gpio_getButton_toggle() == TOGGLE_POSITION2)
+	{
+		//Disable Regen mode
+		if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN)
+		{
+			//we don't want regen, so ignore request
+			mcm_setAllSignals(MAMODE1_STATE_IS_IDLE, JOYSTICK_NEUTRAL_NOM_COUNTS);
+		}
+		else //(ECM not requesting regen)
+		{
+			//pass ECM signals unmodified to MCM
+			mcm_setMAMODE1_state  (ecm_getMAMODE1_state()  );
+			//mcm_setMAMODE1_percent(ecm_getMAMODE1_percent());
+			mcm_setMAMODE2_state  (ecm_getMAMODE2_state()  );
+			mcm_setCMDPWR_percent (ecm_getCMDPWR_percent() );
+		}
+	}
 
 	time_waitForLoopPeriod(); //wait here until next iteration
 }

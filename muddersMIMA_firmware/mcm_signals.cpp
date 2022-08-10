@@ -19,6 +19,13 @@ void mcm_setMAMODE1_percent(uint8_t newPercent)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+void mcm_setMAMODE1_state(uint8_t newState)
+{
+	mcm_setMAMODE1_percent(newState);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 //open drain signal
 void mcm_setCMDPWR_percent(uint8_t newPercent)
 {
@@ -31,6 +38,13 @@ void mcm_setCMDPWR_percent(uint8_t newPercent)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+void mcm_setCMDPWR_counts(uint16_t newCounts)
+{
+	gpio_setCMDPWR_counts(newCounts);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 //open drain signal
 void mcm_setMAMODE2_state(uint8_t newState)
 {
@@ -39,7 +53,16 @@ void mcm_setMAMODE2_state(uint8_t newState)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void mcm_setMAMODE1_state(uint8_t newState)
+void mcm_setAllSignals(uint8_t newState, uint16_t CMDPWR_counts)
 {
-	mcm_setMAMODE1_percent(newState);
+	mcm_setMAMODE1_state(newState); //always the same
+
+	if     (newState == MAMODE1_STATE_IS_ASSIST) { mcm_setMAMODE2_state(MAMODE2_STATE_IS_ASSIST);        mcm_setCMDPWR_counts(CMDPWR_counts); }
+	else if(newState == MAMODE1_STATE_IS_REGEN)  { mcm_setMAMODE2_state(MAMODE2_STATE_IS_REGEN_STANDBY); mcm_setCMDPWR_counts(CMDPWR_counts); }
+	else if(newState == MAMODE1_STATE_IS_IDLE)   { mcm_setMAMODE2_state(MAMODE2_STATE_IS_REGEN_STANDBY); mcm_setCMDPWR_percent(50);           }
+	else
+	{
+		//handle all other states
+	}
+
 }

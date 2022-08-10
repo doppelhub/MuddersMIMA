@@ -47,7 +47,7 @@ void debugUSB_printButtonStates(void)
 	}
 
 	Serial.print(F("Slider: "));
-	Serial.print(adc_readJoystick(),DEC);
+	Serial.print(adc_readJoystick_rawCounts(),DEC);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

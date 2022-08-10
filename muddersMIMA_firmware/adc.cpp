@@ -9,7 +9,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-uint16_t adc_readJoystick(void)
+uint16_t adc_readJoystick_rawCounts(void)
 {
 	return analogRead(PIN_USER_JOYSTICK);
 } 
