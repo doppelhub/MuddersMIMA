@@ -33,30 +33,50 @@ void debugUSB_displayUptime_seconds(void)
 
 void debugUSB_printButtonStates(void)
 {	
-	static uint32_t previousMillis = 0;
+	Serial.print(F("\nButton: "));
+	if(gpio_getButton_momentary() == BUTTON_NOT_PRESSED) { Serial.print(F("UP")); }
+	else                                                 { Serial.print(F("DN")); }
 
-	if( millis() - previousMillis >= DEBUG_USB_UPDATE_PERIOD_mS)
+	Serial.print(F(", Mode: "));
+	switch(gpio_getButton_toggle() )
 	{
-		previousMillis = millis();
-
-
-		Serial.print(F("\nButton: "));
-		if(gpio_getButton_momentary() == BUTTON_NOT_PRESSED) { Serial.print(F("UP")); }
-		else                                                 { Serial.print(F("DN")); }
-
-		Serial.print(F(", Mode: "));
-		switch(gpio_getButton_toggle() )
-		{
-			case TOGGLE_POSITION0: Serial.print(F("0 (Stock),    ")); break;
-			case TOGGLE_POSITION1: Serial.print(F("1 (Manual),   ")); break;
-			case TOGGLE_POSITION2: Serial.print(F("2 (No Regen), ")); break;
-			case TOGGLE_SHORTED  : Serial.print(F("TOGGLE SWITCH SHORTED! ")); break;
-		}
-
-		Serial.print(F("Slider: "));
-		Serial.print(adc_readJoystick(),DEC);
-		
+		case TOGGLE_POSITION0: Serial.print(F("0 (Stock),    ")); break;
+		case TOGGLE_POSITION1: Serial.print(F("1 (Manual),   ")); break;
+		case TOGGLE_POSITION2: Serial.print(F("2 (No Regen), ")); break;
+		case TOGGLE_SHORTED  : Serial.print(F("TOGGLE SWITCH SHORTED! ")); break;
 	}
+
+	Serial.print(F("Slider: "));
+	Serial.print(adc_readJoystick(),DEC);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+void debugUSB_printOEMsignals(void)
+{
+	Serial.print(F("\nMAMODE2:"));
+	if(ecm_getMAMODE2_state() == ECM_MAMODE2_STATE_IS_ASSIST) { Serial.print(F("Assist,  ")); }
+	else                                                      { Serial.print(F("Reg/Idle,")); }
+
+	Serial.print(F(" MAMODE1:"));
+	Serial.print( ecm_getMAMODE1_percent() );
+	Serial.print(F("% ("));
+	switch( ecm_getMAMODE1_state() )
+	{
+		case ECM_MAMODE1_STATE_IS_ERROR_LO:  Serial.print(F("Line LO), ")); break;
+		case ECM_MAMODE1_STATE_IS_PRESTART:  Serial.print(F("Prestart),")); break;
+		case ECM_MAMODE1_STATE_IS_ASSIST:    Serial.print(F("Assist),  ")); break;
+		case ECM_MAMODE1_STATE_IS_REGEN:     Serial.print(F("Regen),   ")); break;
+		case ECM_MAMODE1_STATE_IS_IDLE:      Serial.print(F("Standby), ")); break;
+		case ECM_MAMODE1_STATE_IS_AUTOSTOP:  Serial.print(F("AutoStop),")); break;
+		case ECM_MAMODE1_STATE_IS_START:     Serial.print(F("Starting),")); break;
+		case ECM_MAMODE1_STATE_IS_ERROR_HI:  Serial.print(F("Line HI), ")); break;
+		case ECM_MAMODE1_STATE_IS_UNDEFINED: Serial.print(F("Error),  ")); break;
+	}
+
+	Serial.print(F(" CMDPWR:"));
+	Serial.print( ecm_getCMDPWR_percent() );
+	Serial.print('%');
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,11 +87,12 @@ void debugUSB_printLatestData(void)
 	static uint32_t previousMillis = 0;
 
 	//print message if it's time and there's room in the serial transmit buffer
-	if( (millis() - previousMillis) >= debugUSB_dataUpdatePeriod_ms_get() )
+	if( (millis() - previousMillis) >= debugUSB_dataUpdatePeriod_ms_get() && (Serial.availableForWrite() > 62) )
 	{
 		previousMillis = millis();
 
-		if     (debugUSB_dataTypeToStream_get() == DEBUGUSB_STREAM_BUTTON) { debugUSB_printButtonStates(); }
+		if     (debugUSB_dataTypeToStream_get() == DEBUGUSB_STREAM_BUTTON     ) { debugUSB_printButtonStates(); }
+		else if(debugUSB_dataTypeToStream_get() == DEBUGUSB_STREAM_OEM_SIGNALS) { debugUSB_printOEMsignals();   }
 	}
 }
 

@@ -17,4 +17,8 @@
 	void gpio_turnBuzzer_on(void);
 	void gpio_turnBuzzer_off(void);
 
+	uint16_t gpio_getMAMODE1_counts(void);
+	uint16_t gpio_getCMDPWR_counts(void);
+	bool gpio_getMAMODE2(void);
+
 #endif

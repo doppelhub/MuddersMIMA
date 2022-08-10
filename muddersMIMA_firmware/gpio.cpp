@@ -42,12 +42,17 @@ uint8_t gpio_getButton_toggle(void)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void gpio_turnBuzzer_on(void)
-{
-	//TCCR5B = (TCCR5B & B11111000) | B00000010; // set F_PWM to  3921.16 Hz //pins D44(GPIO3) & D45(BUZZER) & D46()
-	analogWrite(PIN_BUZZER, 127 );
-}
+void gpio_turnBuzzer_on(void)  { analogWrite(PIN_BUZZER, 127 ); }
+void gpio_turnBuzzer_off(void) { analogWrite(PIN_BUZZER, 0); }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void gpio_turnBuzzer_off(void) { analogWrite(PIN_BUZZER,0); }
+uint16_t gpio_getMAMODE1_counts(void) { return analogRead(PIN_MAMODE1_ECM); }
+uint16_t gpio_getCMDPWR_counts(void)  { return analogRead(PIN_CMDPWR_ECM); }
+
+////////////////////////////////////////////////////////////////////////////////////
+
+bool gpio_getMAMODE2(void) { return digitalRead(PIN_MAMODE2_ECM); }
+
+
+////////////////////////////////////////////////////////////////////////////////////

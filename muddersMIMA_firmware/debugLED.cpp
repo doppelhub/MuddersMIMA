@@ -5,24 +5,29 @@
 
 #include "muddersMIMA.h"
 
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 void debugLED(bool illuminated)
 {
 	#ifdef LED_DEBUG
-		digitalWrite(PIN_LED_UNO,illuminated); break;
+		digitalWrite(PIN_LED_UNO,illuminated);
 	#else
 		illuminated +=0; //prevent "unused parameter" compiler warning
 	#endif
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////
 
 void LED(bool illuminated)
 {
 	#ifdef LED_NORMAL
-		digitalWrite(PIN_LED_UNO,illuminated); break;
+		digitalWrite(PIN_LED_UNO,illuminated);
 	#else
 		illuminated +=0; //prevent "unused parameter" compiler warning
 	#endif
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////
 
 void blinkLED()
 {

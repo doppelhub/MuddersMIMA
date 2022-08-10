@@ -32,8 +32,9 @@ void printHelp(void)
 {
 	Serial.print(F("\n\nLiBCM commands:"
 		"\n -'$TEST1'/2/3/4: run test code. See 'USB_userInterface_runTestCode()')"
-		"\n -'$LOOP: main while loop period. '$LOOP=___' to set (1 to 255 ms)"
-		"\n -'$DISP=BUT'/OFF. Choose which data to display."
+		"\n -'$LOOP': main while loop period. '$LOOP=___' to set (1 to 255 ms)"
+		"\n -'$REFR': period between display updates. '$REFR=___' to set (1 to 255 ms)"
+		"\n -'$DISP=BUT'/OEM/OFF. Display 'buttons', OEM ECM signals, or nothing."
 		"\n"
 		//add new commands to "USB_userInterface_executeUserInput()"
 		));
@@ -91,11 +92,27 @@ void USB_userInterface_executeUserInput(void)
 			}
 		}
 
+		//REFR
+		else if( (line[1] == 'R') && (line[2] == 'E') && (line[3] == 'F') && (line[4] == 'R') )
+		{
+			if(line[5] == '=')
+			{
+				uint8_t newRefreshRate_ms = get_uint8_FromInput(line[6],line[7],line[8]);
+				debugUSB_dataUpdatePeriod_ms_set(newRefreshRate_ms);
+			}
+			else if(line[5] == STRING_TERMINATION_CHARACTER)
+			{
+				Serial.print(F("\nDisplay refresh period is (ms): "));
+				Serial.print(debugUSB_dataUpdatePeriod_ms_get(),DEC);
+			}
+		}
+
 		//DISP
 		else if( (line[1] == 'D') && (line[2] == 'I') && (line[3] == 'S') && (line[4] == 'P') && (line[5] == '=') )
 		{
-			if     ( (line[6] == 'B') && (line[7] == 'U') && (line[8] == 'T') ) { debugUSB_dataTypeToStream_set(DEBUGUSB_STREAM_BUTTON); }
-			else if( (line[6] == 'O') && (line[7] == 'F') && (line[8] == 'F') ) { debugUSB_dataTypeToStream_set(DEBUGUSB_STREAM_NONE);   }
+			if     ( (line[6] == 'B') && (line[7] == 'U') && (line[8] == 'T') ) { debugUSB_dataTypeToStream_set(DEBUGUSB_STREAM_BUTTON);      }
+			else if( (line[6] == 'O') && (line[7] == 'F') && (line[8] == 'F') ) { debugUSB_dataTypeToStream_set(DEBUGUSB_STREAM_NONE);        }
+			else if( (line[6] == 'O') && (line[7] == 'E') && (line[8] == 'M') ) { debugUSB_dataTypeToStream_set(DEBUGUSB_STREAM_OEM_SIGNALS); }
 		}
 
 		//$DEFAULT
