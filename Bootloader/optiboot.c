@@ -167,6 +167,10 @@ asm("  .section .version\n"
 #include "pin_defs.h"
 #include "stk500.h"
 
+#ifdef LED_START_FLASHES
+#undef LED_START_FLASHES //undefine LED blinking (to make more room)
+#endif
+
 #ifndef LED_START_FLASHES
 #define LED_START_FLASHES 0
 #endif
@@ -283,11 +287,18 @@ int main(void) {
 #ifdef __AVR_ATmega8__
   SP=RAMEND;  // This is done by hardware reset
 #endif
+  
+  // ch = MCUSR;
+  MCUSR = 0; //prevent watchdog brownout infinite loop
+  // if (!(ch & _BV(EXTRF))) appStart(); // Adaboot no-wait mod
 
-  // Adaboot no-wait mod
-  ch = MCUSR;
-  MCUSR = 0;
-  if (!(ch & _BV(EXTRF))) appStart();
+  // JTS: check push button state //Arduino pin A3 = 328p PINC3 (LOW = pressed)
+  // The button must be pressed to update firmware 
+  if ( (PINC & (1<<PINC3)) != 0 )
+  { 
+    //button isn't pressed; jump directly to main firmware
+    appStart();
+  }
 
 #if LED_START_FLASHES > 0
   // Set up Timer 1 for timeout counter
