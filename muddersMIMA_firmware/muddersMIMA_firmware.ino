@@ -12,10 +12,6 @@ void setup()
 	Serial.begin(115200); //USB
 
 	Serial.print(F("\n\nWelcome to muddersMIMA v" FW_VERSION ", " BUILD_DATE "\nType '$HELP' for more info\n"));
-
-	gpio_turnBuzzer_on();
-	delay(1000);
-	gpio_turnBuzzer_off();
 }
 
 void loop()
