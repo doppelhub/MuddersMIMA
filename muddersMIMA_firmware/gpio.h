@@ -7,7 +7,7 @@
 	#define TOGGLE_POSITION0 3
 	#define TOGGLE_POSITION1 1
 	#define TOGGLE_POSITION2 2
-	#define TOGGLE_SHORTED   0
+	#define TOGGLE_UNDEFINED   0
 
 	void gpio_begin(void);
 

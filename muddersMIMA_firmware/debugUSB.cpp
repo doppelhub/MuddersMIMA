@@ -43,7 +43,7 @@ void debugUSB_printButtonStates(void)
 		case TOGGLE_POSITION0: Serial.print(F("0 (Stock),    ")); break;
 		case TOGGLE_POSITION1: Serial.print(F("1 (Manual),   ")); break;
 		case TOGGLE_POSITION2: Serial.print(F("2 (No Regen), ")); break;
-		case TOGGLE_SHORTED  : Serial.print(F("TOGGLE SWITCH SHORTED! ")); break;
+		case TOGGLE_UNDEFINED  : Serial.print(F("TOGGLE SWITCH SHORTED! ")); break;
 	}
 
 	Serial.print(F("Slider: "));
