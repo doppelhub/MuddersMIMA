@@ -4,7 +4,7 @@
 
 #include "muddersMIMA.h"
 
-//JTS2doNow: Make Bootloader boot faster (only load firmware if button held down when keyON)
+//JTS2doNow: Pushing momentary button when key 'ON' - but not yet 'START' - enables DCDC by sending 'idle' signal on MAMODE (instead of 'prestart')
 
 void setup()  
 {
@@ -65,6 +65,7 @@ void loop()
 	// 	}
 
 	//manual IMA mode (new)
+	//JTS2doNow: allow OEM assist for ten seconds after clutch is let out
 	else if(toggleState == TOGGLE_POSITION2)
 	{
 		static uint16_t joystick_counts_stored = JOYSTICK_NEUTRAL_NOM_COUNTS;
