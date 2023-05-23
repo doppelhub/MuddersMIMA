@@ -37,7 +37,7 @@ void loop()
 	//manual IMA mode (old)
 	else if(toggleState == TOGGLE_POSITION1)
 	{
-		uint16_t joystick_counts = adc_readJoystick_rawCounts();
+		uint16_t joystick_counts = adc_readJoystick_invertedCounts();
 
 		if     (joystick_counts < JOYSTICK_MIN_COUNTS)         { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_COUNTS); } //signal too low
 		else if(joystick_counts < JOYSTICK_NEUTRAL_MIN_COUNTS) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN,  joystick_counts);             } //manual regen
@@ -85,7 +85,7 @@ void loop()
 			//ECM is sending assist, idle, or regen signal...
 			//but we're in manual mode, so use joystick value instead (either previously stored or value right now)
 
-			uint16_t joystick_counts = adc_readJoystick_rawCounts(); //read joystick value
+			uint16_t joystick_counts = adc_readJoystick_invertedCounts(); //read joystick value
 
 			if(gpio_getButton_momentary() == BUTTON_PRESSED)
 			{

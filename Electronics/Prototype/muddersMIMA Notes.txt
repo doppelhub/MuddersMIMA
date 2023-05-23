@@ -1,0 +1,26 @@
+Signals to add:
+VSS (in same harness)
+brake signal
+TPS
+clutch
+
+Supported Switches:
+CWB1BK1A02A0 (black)
+CWB1GY1A02A0 (gray)
+https://www.micro-semiconductor.com/products/APEM-Inc/CW-B1GY1A02A0
+
+...
+
+Male 10p Ribbon cable breakout:
+1528-2152-ND
+https://www.adafruit.com/product/1199
+
+6p MiniDIN cable (male and female extension):
+AE9875-ND
+
+8p MiniDIN cable
+https://www.amazon.com/gp/product/B07WHXTQN6/ref=ox_sc_act_title_2?smid=A3SA3I47FHXAYS&psc=1
+
+DB9 connector
+https://www.amazon.com/Connector-Adapters-Adapter-Terminal-Screwdriver/dp/B093PFX62L/ref=sr_1_14?crid=3N9LLO1S2GBDV&keywords=PS%2F2%2Bbreakout&qid=1661160689&sprefix=ps%2F2%2Bbreakout%2Caps%2C74&sr=8-14&th=1
+

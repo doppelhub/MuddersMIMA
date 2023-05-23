@@ -1,0 +1,1 @@
+Add open drain NFET so LiControl can turn brake lights on during heavy regen.

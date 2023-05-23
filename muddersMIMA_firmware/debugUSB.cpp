@@ -48,6 +48,8 @@ void debugUSB_printButtonStates(void)
 
 	Serial.print(F("Slider: "));
 	Serial.print(adc_readJoystick_rawCounts(),DEC);
+	Serial.print(F(", Inverted: "));
+	Serial.print(adc_readJoystick_invertedCounts(),DEC);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

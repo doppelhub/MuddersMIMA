@@ -11,7 +11,10 @@
 	#define JOYSTICK_NEUTRAL_ACCURACY_COUNTS 41 //specified: ±4% (1024*.04=41 counts)
 	#define JOYSTICK_NEUTRAL_MAX_COUNTS      ((uint16_t)((JOYSTICK_NEUTRAL_NOM_COUNTS + JOYSTICK_NEUTRAL_ACCURACY_COUNTS) + JOYSTICK_GUARDBAND))
 	#define JOYSTICK_NEUTRAL_MIN_COUNTS      ((uint16_t)((JOYSTICK_NEUTRAL_NOM_COUNTS - JOYSTICK_NEUTRAL_ACCURACY_COUNTS) - JOYSTICK_GUARDBAND))
+	#define ADC_NUM_COUNTS_10b               1024
 
 	uint16_t adc_readJoystick_rawCounts(void);
+
+	uint16_t adc_readJoystick_invertedCounts(void);
 
 #endif

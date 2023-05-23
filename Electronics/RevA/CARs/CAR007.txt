@@ -1,0 +1,5 @@
+Add crowbar to blow out +12 volt fuse if +12V is connected to MAMOD2.
+
+A better option is to just add a series resistor between MAMOD2(ECM) and the microcontroller.  Then add a zener diode to the microcontroller side, which will pull voltage down to 6 volts.
+
+Probably also need to add a pullup to MAMOD2(ECM).
