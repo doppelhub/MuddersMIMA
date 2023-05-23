@@ -24,7 +24,7 @@ uint16_t adc_readJoystick_invertedCounts(void)
 	uint16_t rawCounts_ADC = (adc_readJoystick_rawCounts() & (ADC_NUM_COUNTS_10b - 1)); //store 10 LSBs for inversion
 	uint16_t invertedCounts_ADC = (ADC_NUM_COUNTS_10b - 1) - rawCounts_ADC; //invert counts
 
-	if( (invertedCounts_ADC + rawCounts_ADC) != ADC_NUM_COUNTS_10b)
+	if( (invertedCounts_ADC + rawCounts_ADC) != (ADC_NUM_COUNTS_10b - 1) )
 	{
 		//something overflowed
 		//this should never happen, but worth checking
