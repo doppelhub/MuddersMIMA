@@ -10,7 +10,7 @@
 void debugLED(bool illuminated)
 {
 	#ifdef LED_DEBUG
-		digitalWrite(PIN_LED_UNO,illuminated);
+		digitalWrite(PIN_SPI_SCK_LED,illuminated);
 	#else
 		illuminated +=0; //prevent "unused parameter" compiler warning
 	#endif
@@ -21,7 +21,7 @@ void debugLED(bool illuminated)
 void LED(bool illuminated)
 {
 	#ifdef LED_NORMAL
-		digitalWrite(PIN_LED_UNO,illuminated);
+		digitalWrite(PIN_SPI_SCK_LED,illuminated);
 	#else
 		illuminated +=0; //prevent "unused parameter" compiler warning
 	#endif
@@ -36,7 +36,7 @@ void blinkLED()
 		if(millis() - previousMillis >= 100)
 		{
 			previousMillis = millis();
-			digitalWrite(PIN_LED_UNO, !digitalRead(PIN_LED_UNO) );
+			digitalWrite(PIN_SPI_SCK_LED, !digitalRead(PIN_SPI_SCK_LED) );
 		}
 	#endif	
 }

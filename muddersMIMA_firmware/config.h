@@ -11,6 +11,8 @@
     #define BUILD_DATE "2022NOV04"
 
 	#define CPU_MAP_ATMEGA328p
+    
+	//#define HW_PROTO
     #define HW_REVA
 
 	#define LED_NORMAL

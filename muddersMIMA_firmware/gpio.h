@@ -14,9 +14,6 @@
 	bool gpio_getButton_momentary(void);
 	uint8_t gpio_getButton_toggle(void);
 
-	void gpio_turnBuzzer_on(void);
-	void gpio_turnBuzzer_off(void);
-
 	uint16_t gpio_getMAMODE1_counts(void);
 	void     gpio_setMAMODE1_counts(uint8_t counts);
 

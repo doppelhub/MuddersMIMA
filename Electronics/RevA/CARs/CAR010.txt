@@ -1,0 +1,8 @@
+R30 & R31 cause voltage to sag when CMOS flips
+Add more capacitance in parallel to C12 & C13... or lower resistance on R30 & R31... or both.
+
+Troubleshooting: Adding 1 uF capacitor makes behavior better... but PWM duty cycle is still off slightly.
+
+Depop C8 & C9 to make duty cycle closer to correct value.
+
+Change R24 & R25 to 100 Ohms

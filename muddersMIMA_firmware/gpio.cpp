@@ -10,8 +10,6 @@
 
 void gpio_begin(void)
 {
-	pinMode(PIN_BUZZER,OUTPUT);
-
 	pinMode(PIN_CMDPWR_MCM,OUTPUT);
 	pinMode(PIN_CMDPWR_ECM,INPUT); //disables pullup... which causes RC LPF to read high
 
@@ -21,7 +19,7 @@ void gpio_begin(void)
 	pinMode(PIN_MAMODE2_MCM,OUTPUT);
 	pinMode(PIN_MAMODE2_ECM,INPUT_PULLUP);
 	
-	pinMode(PIN_LED_UNO,OUTPUT);
+	pinMode(PIN_SPI_SCK_LED,OUTPUT); //JTS2doLater: Remove this before adding LiBCM SPI link
 
 	pinMode(PIN_USER_MOMENTARY, INPUT_PULLUP);
 	pinMode(PIN_USER_TOGGLE1, INPUT_PULLUP);
@@ -53,11 +51,6 @@ uint8_t gpio_getButton_toggle(void)
 
 	return toggleState;
 }
-
-////////////////////////////////////////////////////////////////////////////////////
-
-void gpio_turnBuzzer_on(void)  { analogWrite(PIN_BUZZER, 127 ); }
-void gpio_turnBuzzer_off(void) { analogWrite(PIN_BUZZER, 0); }
 
 ////////////////////////////////////////////////////////////////////////////////////
 

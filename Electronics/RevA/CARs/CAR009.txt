@@ -1,0 +1,3 @@
+Add plastic inserts into all four corners, so that PCB can't contact chassis.  These feet don't need to be very long... just need to be the first thing that would contact the chassis.
+
+Another option is to add two holes on either side of J1, which allows a zip tie to wrap around harness (below PCB).  In that case, need to add felt pad to bottom of PCB (so the thru hole terminals don't pierce harness wire insulation (below).  Maybe just wrap the harness in electric tape after cutting the specific wires (and leaving them unwrapped).
