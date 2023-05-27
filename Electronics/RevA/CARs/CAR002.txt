@@ -11,13 +11,25 @@ Add which seat middle connector each wire comes from:
 -top connector is gray, C506
 -bottom connector is blue, C505
 Proposed silkscreen text:
-MA2 | BLK/YEL(BLU22) (note: this is the third BLK/YEL wire in this harness, but only one on blue connector).
-MA1 | RED/YEL(BLU01)
-CMD | BLU/BLK(BLU04)
-GND | BRN/YEL(BLU20)
-12V | BLK/YEL(GRY07) (note: C506 has QTY2 BLK/YEL wires.  Both are +12V.  Use either one.)
-NEP | BLU/BLU(GRY02)
-VSS | BLU/WHT(GRY08)
+A: MA2 | BLK/YEL(BLU22) (note: this is the third BLK/YEL wire in this harness, but only one on blue connector).
+B: MA1 | RED/YEL(BLU01)
+C: CMD | BLU/BLK(BLU04)
+D: GND | BRN/YEL(BLU20)
+E: 12K | BLK/YEL(GRY07) (note: C506 has QTY2 BLK/YEL wires.  Both are +12V.  Use either one.)
+F: NEP | BLU/BLU(GRY02)
+G: VSS | BLU/WHT(GRY08)
+H: 12A | WHT/BLU(GRY03) (note: not on RevA)
+
+For easier wiring, change connector positions as follows:
+A: MA2 | BLK/YEL(BLU22) (note: this is the third BLK/YEL wire in this harness, but only one on blue connector).
+D: GND | BRN/YEL(BLU20)
+H: 12A | WHT/BLU(GRY09) (note: not on RevA)(note: C506 has QTY2 WHT/BLU wires.  Use thick one!)
+G: VSS | BLU/WHT(GRY08)
+E: 12K | BLK/YEL(GRY07) (note: C506 has QTY2 BLK/YEL wires.  Both are +12V.  Use either one.)
+C: CMD | BLU/BLK(BLU04)
+F: NEP | BLU/BLU(GRY02)
+B: MA1 | RED/YEL(BLU01)
+
 
 FYI: Pin1 is driver-side top
 

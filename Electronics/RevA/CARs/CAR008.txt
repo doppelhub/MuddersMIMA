@@ -1,7 +1,4 @@
 Add hiside driver for brake lights.
-This will need to source power from C506 WHT/BLU, which is hot at all times and ONLY powers the PDU fan.  Need to see how much current the PDU fan pulls at high speed.  Brake lights pull about 5 amps.
+This will need to source power from C506 WHT/BLU, which is hot at all times and ONLY powers the PDU fan.  Need to see how much current the PDU fan pulls at high speed.  Brake lights pull 4 amps in my car, but are specified up to 5 amps.
 
-Possible high-side drivers include:
-497-15993-1-ND
-846-BV1HAL45EFJ-E2CT-ND
-BTS50301EJAXUMA1CT-ND
+Done.

@@ -3,3 +3,5 @@ Q11
 Q9
 Q8
 Q7
+
+Fixed in RevB.
