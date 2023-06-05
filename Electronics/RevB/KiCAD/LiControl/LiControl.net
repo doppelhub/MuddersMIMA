@@ -1,7 +1,7 @@
 (export (version D)
   (design
     (source /Volumes/HighSierraNVMe/Users/master/Documents/GitHub/MuddersMIMA/Electronics/RevB/KiCAD/LiControl/LiControl.sch)
-    (date "Friday, May 26, 2023 at 10:31:23 PM")
+    (date "Sunday, May 28, 2023 at 10:31:57 PM")
     (tool "Eeschema (5.1.9-0-10_14)")
     (sheet (number 1) (name /) (tstamps /)
       (title_block

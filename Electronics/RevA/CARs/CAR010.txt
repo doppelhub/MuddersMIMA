@@ -6,3 +6,6 @@ Troubleshooting: Adding 1 uF capacitor makes behavior better... but PWM duty cyc
 Depop C8 & C9 to make duty cycle closer to correct value.
 
 Change R24 & R25 to 100 Ohms
+
+Solution:
+Partially implemented above, and changed 20 Ohm resistors to ferrites.

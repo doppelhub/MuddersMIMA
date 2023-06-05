@@ -35,4 +35,4 @@ FYI: Pin1 is driver-side top
 
 Should include QTY2 "+12V KEYON" labels that user installs on that wire before cutting it.
 
-...
+Done.
