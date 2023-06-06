@@ -25,6 +25,9 @@ void gpio_begin(void)
 	pinMode(PIN_USER_TOGGLE1, INPUT_PULLUP);
 	pinMode(PIN_USER_TOGGLE2, INPUT_PULLUP);
 
+	pinMode(PIN_BRAKE,OUTPUT);
+	digitalWrite(PIN_BRAKE,LOW);
+
 	analogWrite(PIN_CMDPWR_MCM, 511); //10b counter set to 50% PWM
     analogWrite(PIN_MAMODE1_MCM, 127); //8b counter set to 50% PWM
     digitalWrite(PIN_MAMODE2_MCM, MAMODE2_STATE_IS_REGEN_STANDBY);

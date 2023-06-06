@@ -4,7 +4,12 @@
 
 #include "muddersMIMA.h"
 
+//You must continuously hold down the momentary button while uploading this firmware.
+//Hold the button down before pushing 'upload'.
+//Keep holding the button down until the upload process is finished.
+
 //JTS2doNow: Pushing momentary button when key 'ON' - but not yet 'START' - enables DCDC by sending 'idle' signal on MAMODE (instead of 'prestart')
+//Another possibility: Pushing momentary (as above) starts the engine, and maybe auto-stops, too.
 
 void setup()  
 {

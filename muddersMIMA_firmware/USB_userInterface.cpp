@@ -22,7 +22,13 @@ void USB_userInterface_runTestCode(uint8_t testToRun)
 	if     (testToRun == STRING_TERMINATION_CHARACTER) { Serial.print(F("\nError: Test not specified")); }
 	else if(testToRun == '1')
 	{
-		Serial.print(F("\nRunning TEST1:"));
+		Serial.print(F("\nRunning TEST1: Brake Lights On"));
+		digitalWrite(PIN_BRAKE,HIGH);
+	}
+	else if(testToRun == '2')
+	{
+		Serial.print(F("\nRunning TEST2: Brake Lights Off"));
+		digitalWrite(PIN_BRAKE,LOW);
 	}
 }
 

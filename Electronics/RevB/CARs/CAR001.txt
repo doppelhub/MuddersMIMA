@@ -1,0 +1,3 @@
+Silkscreen:
+U1 missing pin1 circle
+Make diode silkscreen bigger (silkscreen resolution)
