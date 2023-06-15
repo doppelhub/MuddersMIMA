@@ -1,4 +1,4 @@
-//Copyright 2022(c) John Sullivan
+//Copyright 2022-2023(c) John Sullivan
 
 
 //Handles serial debug data transfers from LIBCM to  host
@@ -58,7 +58,7 @@ void debugUSB_printOEMsignals(void)
 {
 	Serial.print(F("\nMAMODE2:"));
 	if(ecm_getMAMODE2_state() == MAMODE2_STATE_IS_ASSIST) { Serial.print(F("Assist,  ")); }
-	else                                                      { Serial.print(F("Reg/Idle,")); }
+	else                                                  { Serial.print(F("Reg/Idle,")); }
 
 	Serial.print(F(" MAMODE1:"));
 	Serial.print( ecm_getMAMODE1_percent() );

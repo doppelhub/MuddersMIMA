@@ -1,4 +1,4 @@
-//Copyright 2022(c) John Sullivan
+//Copyright 2022-2023(c) John Sullivan
 
 
 //main LiBCM include file
@@ -27,5 +27,6 @@
   #include "USB_userInterface.h"
   #include "ecm_signals.h"
   #include "mcm_signals.h"
+  #include "spiToLiBCM.h"
 
 #endif

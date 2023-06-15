@@ -1,4 +1,4 @@
-//Copyright 2022(c) John Sullivan
+//Copyright 2022-2023(c) John Sullivan
 
 
 //all digitalRead(), digitalWrite(), analogRead(), analogWrite() functions live here

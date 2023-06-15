@@ -1,4 +1,4 @@
-//Copyright 2022(c) John Sullivan
+//Copyright 2022-2023(c) John Sullivan
 
 
 //config.h - compile time configuration parameters
@@ -7,8 +7,8 @@
 	#define config_h
 	#include "muddersMIMA.h"  //For Arduino IDE compatibility
 
-	#define FW_VERSION "0.0.6"
-    #define BUILD_DATE "2023JUN05"
+	#define FW_VERSION "0.0.7"
+    #define BUILD_DATE "2023JUN10"
 
 	#define CPU_MAP_ATMEGA328p
     
