@@ -15,7 +15,10 @@ void mcm_setCMDPWR_percent(uint8_t newPercent) { gpio_setCMDPWR_percent (newPerc
 
 void mcm_setAllSignals(uint8_t newState, uint16_t CMDPWR_percent)
 {
-	mcm_setMAMODE1_state(newState); //always the same
+	mcm_setMAMODE1_state(newState);
+
+	if(CMDPWR_percent > 90) { CMDPWR_percent = 90; }
+	if(CMDPWR_percent < 10) { CMDPWR_percent = 10; }
 
 	if     (newState == MAMODE1_STATE_IS_ASSIST) { mcm_setMAMODE2_state(MAMODE2_STATE_IS_ASSIST);        mcm_setCMDPWR_percent(CMDPWR_percent); }
 	else if(newState == MAMODE1_STATE_IS_REGEN)  { mcm_setMAMODE2_state(MAMODE2_STATE_IS_REGEN_STANDBY); mcm_setCMDPWR_percent(CMDPWR_percent); }

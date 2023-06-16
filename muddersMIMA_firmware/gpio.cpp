@@ -31,7 +31,7 @@ void gpio_begin(void)
     digitalWrite(PIN_MAMODE2_MCM, MAMODE2_STATE_IS_REGEN_STANDBY);
 
     // Pins D9 and D10 @ 2 kHz
-  	TCCR1A = 0b00000011; // 10bit
+  	//TCCR1A = 0b00000011; // 10bit
   	TCCR1B = 0b00001010; // x8 fast pwm
 
   	// Pins D3 and D11 - 31.4 kHz (OEM is 20 kHz, but this is close enough)
