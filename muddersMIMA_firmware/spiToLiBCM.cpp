@@ -2,6 +2,6 @@
 
 #include "muddersMIMA.h"
 
-//JTS2doNow: use whichever SPI slave mode starts with clock high when CS pulls down
+//JTS2doLater: use whichever SPI slave mode starts with clock high when CS pulls down
 
 ////////////////////////////////////////////////////////////////////////////////////

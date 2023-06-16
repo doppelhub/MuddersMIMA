@@ -1,7 +1,7 @@
 //Copyright 2022-2023(c) John Sullivan
 
 
-//all digitalRead(), digitalWrite(), analogRead(), analogWrite() functions live here
+//all digitalRead(), digitalWrite(), analogWrite() functions live here
 //JTS2doLater: Replace Arduino fcns with low level
 
 #include "muddersMIMA.h"
@@ -18,8 +18,6 @@ void gpio_begin(void)
 
 	pinMode(PIN_MAMODE2_MCM,OUTPUT);
 	pinMode(PIN_MAMODE2_ECM,INPUT_PULLUP);
-	
-	pinMode(PIN_SPI_SCK_LED,OUTPUT); //JTS2doLater: Remove this before adding LiBCM SPI link
 
 	pinMode(PIN_USER_MOMENTARY, INPUT_PULLUP);
 	pinMode(PIN_USER_TOGGLE1, INPUT_PULLUP);
@@ -57,14 +55,27 @@ uint8_t gpio_getButton_toggle(void)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-uint16_t gpio_getMAMODE1_counts(void)     { return analogRead(PIN_MAMODE1_ECM); } //10b ADC result //signal read from ECM
-void     gpio_setMAMODE1_counts(uint8_t counts) { analogWrite(PIN_MAMODE1_MCM, counts); } //8b counter //signal sent to MCM
+void gpio_setMAMODE1_percent(uint8_t newPercent)
+{
+	uint16_t counts = (uint16_t)newPercent * 2.55; //output PWM uses 8b counter (percent*255/100)
 
-uint16_t gpio_getCMDPWR_counts(void)      { return analogRead(PIN_CMDPWR_ECM); } //10b ADC result //signal read from ECM
-void     gpio_setCMDPWR_counts(uint16_t counts) { analogWrite(PIN_CMDPWR_MCM, counts); } //10b counter //signal sent to MCM
+	if(counts > 255) { counts = 255; }
+
+	analogWrite(PIN_MAMODE1_MCM, counts); //8b counter
+}
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-bool gpio_getMAMODE2(void) { return digitalRead(PIN_MAMODE2_ECM); } //signal read from ECM
-void gpio_setMAMODE2(bool mode)  { digitalWrite(PIN_MAMODE2_MCM, mode); } //signal sent to MCM
+void gpio_setCMDPWR_percent(uint8_t newPercent)
+{
+	uint16_t counts = (uint16_t)newPercent * 2.55; //output PWM uses 8b counter (percent*255/100)
+
+	if(counts > 255) { counts = 255; }
+
+	analogWrite(PIN_CMDPWR_MCM, counts); //8b counter
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
+
+bool gpio_getMAMODE2_bool(void) { return digitalRead(PIN_MAMODE2_ECM); } //signal read from ECM
+void gpio_setMAMODE2_bool(bool mode) { digitalWrite(PIN_MAMODE2_MCM, mode); } //signal sent to MCM

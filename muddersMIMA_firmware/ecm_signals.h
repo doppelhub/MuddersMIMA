@@ -17,9 +17,10 @@
 	#define MAMODE2_STATE_IS_ASSIST        0
 	#define MAMODE2_STATE_IS_REGEN_STANDBY 1
 
-	uint8_t ecm_getMAMODE1_percent(void);
 	uint8_t ecm_getMAMODE1_state(void);
-	uint8_t ecm_getMAMODE2_state(void);
+	bool    ecm_getMAMODE2_state(void);
 	uint8_t ecm_getCMDPWR_percent(void);
+
+	void ecm_handler(void);
 
 #endif

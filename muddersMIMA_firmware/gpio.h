@@ -7,20 +7,20 @@
 	#define TOGGLE_POSITION0 3
 	#define TOGGLE_POSITION1 1
 	#define TOGGLE_POSITION2 2
-	#define TOGGLE_UNDEFINED   0
+	#define TOGGLE_UNDEFINED 0
 
 	void gpio_begin(void);
 
 	bool gpio_getButton_momentary(void);
+
 	uint8_t gpio_getButton_toggle(void);
 
-	uint16_t gpio_getMAMODE1_counts(void);
-	void     gpio_setMAMODE1_counts(uint8_t counts);
+	void gpio_setMAMODE1_percent(uint8_t newPercent);
+	
+	void gpio_setCMDPWR_percent(uint8_t newPercent);
 
-	uint16_t gpio_getCMDPWR_counts(void);
-	void     gpio_setCMDPWR_counts(uint16_t counts);
-
-	bool gpio_getMAMODE2(void);
-	void gpio_setMAMODE2(bool mode);
+	bool gpio_getMAMODE2_bool(void);
+	
+	void gpio_setMAMODE2_bool(bool mode);
 
 #endif

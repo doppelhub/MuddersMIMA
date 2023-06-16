@@ -19,7 +19,6 @@
   //Define LiBCM system include files.  Note: Do not alter order.
   #include "config.h"
   #include "cpu_map.h"
-  #include "debugLED.h"
   #include "debugUSB.h"
   #include "gpio.h"
   #include "adc.h"
@@ -28,5 +27,6 @@
   #include "ecm_signals.h"
   #include "mcm_signals.h"
   #include "spiToLiBCM.h"
+  #include "operatingModes.h"
 
 #endif

@@ -41,9 +41,9 @@
             #define PIN_NEP             8
             #define PIN_CMDPWR_MCM      9
             #define PIN_SPI_CS         10
-            #define PIN_SPI_MOSI       11
-            #define PIN_SPI_MISO       12
-            #define PIN_SPI_SCK_LED    13
+            //#define PIN_SPI_MOSI       11 //default values //already defined
+            //#define PIN_SPI_MISO       12
+            //#define PIN_SPI_SCK        13
 
       #endif
 
