@@ -7,8 +7,8 @@
 	#define config_h
 	#include "muddersMIMA.h"  //For Arduino IDE compatibility
 
-	#define FW_VERSION "0.0.8"
-    #define BUILD_DATE "2023JUN14"
+	#define FW_VERSION "0.1.0"
+    #define BUILD_DATE "2023JUN15"
 
 	#define CPU_MAP_ATMEGA328p
     

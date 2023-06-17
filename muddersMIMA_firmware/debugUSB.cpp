@@ -61,15 +61,15 @@ void debugUSB_printOEMsignals(void)
 	Serial.print(F(" MAMODE1:"));
 	switch( ecm_getMAMODE1_state() )
 	{
-		case MAMODE1_STATE_IS_ERROR_LO:  Serial.print(F("Line LO), ")); break;
-		case MAMODE1_STATE_IS_PRESTART:  Serial.print(F("Prestart),")); break;
-		case MAMODE1_STATE_IS_ASSIST:    Serial.print(F("Assist),  ")); break;
-		case MAMODE1_STATE_IS_REGEN:     Serial.print(F("Regen),   ")); break;
-		case MAMODE1_STATE_IS_IDLE:      Serial.print(F("Standby), ")); break;
-		case MAMODE1_STATE_IS_AUTOSTOP:  Serial.print(F("AutoStop),")); break;
-		case MAMODE1_STATE_IS_START:     Serial.print(F("Starting),")); break;
-		case MAMODE1_STATE_IS_ERROR_HI:  Serial.print(F("Line HI), ")); break;
-		case MAMODE1_STATE_IS_UNDEFINED: Serial.print(F("Error),  ")); break;
+		case MAMODE1_STATE_IS_ERROR_LO:  Serial.print(F("Line LO, ")); break;
+		case MAMODE1_STATE_IS_PRESTART:  Serial.print(F("Prestart,")); break;
+		case MAMODE1_STATE_IS_ASSIST:    Serial.print(F("Assist,  ")); break;
+		case MAMODE1_STATE_IS_REGEN:     Serial.print(F("Regen,   ")); break;
+		case MAMODE1_STATE_IS_IDLE:      Serial.print(F("Standby, ")); break;
+		case MAMODE1_STATE_IS_AUTOSTOP:  Serial.print(F("AutoStop,")); break;
+		case MAMODE1_STATE_IS_START:     Serial.print(F("Starting,")); break;
+		case MAMODE1_STATE_IS_ERROR_HI:  Serial.print(F("Line HI, ")); break;
+		case MAMODE1_STATE_IS_UNDEFINED: Serial.print(F("Error,  ")); break;
 	}
 
 	Serial.print(F(" CMDPWR:"));
