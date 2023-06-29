@@ -6,13 +6,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-uint16_t adc_readJoystick_rawCounts(void)
-{
-	return analogRead(PIN_USER_JOYSTICK);
-} 
-
-////////////////////////////////////////////////////////////////////////////////////
-
 //JTS2doNow: If behavior is jerky, change all joystick and cmdpwr functions from 'percent' to '8b_binaryPercent' 
 uint8_t adc_readJoystick_percent(void)
 {
