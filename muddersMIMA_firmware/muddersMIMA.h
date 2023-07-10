@@ -28,5 +28,6 @@
   #include "mcm_signals.h"
   #include "spiToLiBCM.h"
   #include "operatingModes.h"
+  #include "brakeLights.h"
 
 #endif
