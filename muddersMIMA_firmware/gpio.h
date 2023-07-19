@@ -9,6 +9,9 @@
 	#define TOGGLE_POSITION2 2
 	#define TOGGLE_UNDEFINED 0
 
+	#define USER_IS_BRAKING true
+	#define USER_NOT_BRAKING false
+
 	void gpio_begin(void);
 
 	bool gpio_getButton_momentary(void);
@@ -22,5 +25,7 @@
 	bool gpio_getMAMODE2_bool(void);
 	
 	void gpio_setMAMODE2_bool(bool mode);
+
+	bool gpio_getBrakePosition_bool(void);
 
 #endif
