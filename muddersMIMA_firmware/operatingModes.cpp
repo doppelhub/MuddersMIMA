@@ -56,7 +56,7 @@ void mode_manualControl_new(void)
 
 		//disable stored joystick value if user is braking
 		//JTS2doLater: Add clutch disable
-		if(gpio_getBrakePosition_bool() == USER_IS_BRAKING)
+		if(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)
 		{
 			useStoredJoystickValue = NO;
 			joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;

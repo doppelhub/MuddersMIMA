@@ -6,6 +6,8 @@
 
 #include "muddersMIMA.h"
 
+uint8_t mcmCMDPWR_Percent = 50;
+
 ////////////////////////////////////////////////////////////////////////////////////
 
 void gpio_begin(void)
@@ -22,9 +24,6 @@ void gpio_begin(void)
 	pinMode(PIN_USER_MOMENTARY, INPUT_PULLUP);
 	pinMode(PIN_USER_TOGGLE1, INPUT_PULLUP);
 	pinMode(PIN_USER_TOGGLE2, INPUT_PULLUP);
-
-	pinMode(PIN_BRAKE,OUTPUT); //JTS2doNow: Move into brake handler
-	digitalWrite(PIN_BRAKE,LOW);
 
 	analogWrite(PIN_CMDPWR_MCM, 511); //10b counter set to 50% PWM
     analogWrite(PIN_MAMODE1_MCM, 127); //8b counter set to 50% PWM
@@ -55,7 +54,7 @@ uint8_t gpio_getButton_toggle(void)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void gpio_setMAMODE1_percent(uint8_t newPercent)
+void gpio_setMCM_MAMODE1_percent(uint8_t newPercent)
 {
 	uint16_t counts = (uint16_t)newPercent * 2.55; //output PWM uses 8b counter (percent*255/100)
 
@@ -66,8 +65,10 @@ void gpio_setMAMODE1_percent(uint8_t newPercent)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void gpio_setCMDPWR_percent(uint8_t newPercent)
+void gpio_setMCM_CMDPWR_percent(uint8_t newPercent)
 {
+	mcmCMDPWR_Percent = newPercent;
+
 	uint16_t counts = (uint16_t)newPercent * 2.55; //output PWM uses 8b counter (percent*255/100)
 
 	if(counts > 255) { counts = 255; }
@@ -77,13 +78,40 @@ void gpio_setCMDPWR_percent(uint8_t newPercent)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-bool gpio_getMAMODE2_bool(void) { return digitalRead(PIN_MAMODE2_ECM); } //signal read from ECM
-void gpio_setMAMODE2_bool(bool mode) { digitalWrite(PIN_MAMODE2_MCM, mode); } //signal sent to MCM
+uint8_t gpio_getMCM_CMDPWR_percent(void) { return mcmCMDPWR_Percent; }
+
+////////////////////////////////////////////////////////////////////////////////////
+
+bool gpio_getECM_MAMODE2_bool(void) { return digitalRead(PIN_MAMODE2_ECM); } //signal read from ECM
+void gpio_setMCM_MAMODE2_bool(bool mode) { digitalWrite(PIN_MAMODE2_MCM, mode); } //signal sent to MCM
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 bool gpio_getBrakePosition_bool(void)
 {
-	if(digitalRead(PIN_BRAKE) == LOW) { return USER_NOT_BRAKING; }
-	else                              { return USER_IS_BRAKING;  }
+	if(digitalRead(PIN_BRAKE) == LOW) { return BRAKE_LIGHTS_ARE_OFF; }
+	else                              { return BRAKE_LIGHTS_ARE_ON;  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+void gpio_brakeLights_turnOn(void)
+{
+	pinMode(PIN_BRAKE,OUTPUT);
+	digitalWrite(PIN_BRAKE,HIGH);
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+void gpio_brakeLights_turnOff(void)
+{
+	pinMode(PIN_BRAKE,OUTPUT);
+	digitalWrite(PIN_BRAKE,LOW);
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+void gpio_brakeLights_floatPin(void)
+{
+	pinMode(PIN_BRAKE,INPUT);
 }

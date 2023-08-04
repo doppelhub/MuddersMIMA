@@ -9,8 +9,8 @@
 	#define TOGGLE_POSITION2 2
 	#define TOGGLE_UNDEFINED 0
 
-	#define USER_IS_BRAKING true
-	#define USER_NOT_BRAKING false
+	#define BRAKE_LIGHTS_ARE_ON  true
+	#define BRAKE_LIGHTS_ARE_OFF false
 
 	void gpio_begin(void);
 
@@ -18,14 +18,22 @@
 
 	uint8_t gpio_getButton_toggle(void);
 
-	void gpio_setMAMODE1_percent(uint8_t newPercent);
+	void gpio_setMCM_MAMODE1_percent(uint8_t newPercent);
 	
-	void gpio_setCMDPWR_percent(uint8_t newPercent);
+	void gpio_setMCM_CMDPWR_percent(uint8_t newPercent);
 
-	bool gpio_getMAMODE2_bool(void);
+	uint8_t gpio_getMCM_CMDPWR_percent(void);
+
+	bool gpio_getECM_MAMODE2_bool(void);
 	
-	void gpio_setMAMODE2_bool(bool mode);
+	void gpio_setMCM_MAMODE2_bool(bool mode);
 
 	bool gpio_getBrakePosition_bool(void);
+
+	void gpio_brakeLights_turnOn(void);
+
+	void gpio_brakeLights_turnOff(void);
+
+	void gpio_brakeLights_floatPin(void);
 
 #endif

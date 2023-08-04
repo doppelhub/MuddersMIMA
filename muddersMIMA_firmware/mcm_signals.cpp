@@ -7,9 +7,9 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void mcm_setMAMODE1_state (uint8_t newState  ) { gpio_setMAMODE1_percent(newState);   }
-void mcm_setMAMODE2_state (uint8_t newState  ) { gpio_setMAMODE2_bool   (newState);   }
-void mcm_setCMDPWR_percent(uint8_t newPercent) { gpio_setCMDPWR_percent (newPercent); }
+void mcm_setMAMODE1_state (uint8_t newState  ) { gpio_setMCM_MAMODE1_percent(newState);   } //JTS2doNow: Redundant... remove
+void mcm_setMAMODE2_state (uint8_t newState  ) { gpio_setMCM_MAMODE2_bool   (newState);   }
+void mcm_setCMDPWR_percent(uint8_t newPercent) { gpio_setMCM_CMDPWR_percent (newPercent); }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 

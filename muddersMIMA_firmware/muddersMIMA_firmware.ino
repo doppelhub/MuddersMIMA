@@ -26,6 +26,7 @@ void loop()
 {
 	ecm_handler();
 	time_handler();
+	brakeLights_handler();
 	operatingModes_handler();
 	USB_userInterface_handler();
 	

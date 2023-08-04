@@ -15,8 +15,8 @@
 
 	uint8_t adc_readJoystick_percent(void);
 
-	uint8_t adc_getCMDPWR_percent(void);
+	uint8_t adc_getECM_CMDPWR_percent(void);
 
-	uint8_t adc_getMAMODE1_percent(void);
+	uint8_t adc_getECM_MAMODE1_percent(void);
 
 #endif

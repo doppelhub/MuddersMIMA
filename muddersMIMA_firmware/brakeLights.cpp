@@ -4,21 +4,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-// //Control logic is something like
-// if( (gpio_brakeLightStatus() == BRAKE_LIGHTS_ARE_ON) &&
-//     (doesLiControlWantBrakeLightsOn() == NO        )  )	
-// {	
-// 	pinMode(PIN_BRAKE_uC,OUTPUT); //gpio_turnBrakeLightsOff()
-// 	digitalWrite(PIN_BRAKE_uC,LOW);
-// }
-// else if( (gpio_brakeLightStatus() == BRAKE_LIGHTS_ARE_OFF) &&		
-//          (doesLiControlWantBrakeLightsOn() == YES        )  )
-// {
-// 		pinMode(PIN_BRAKE_uC,OUTPUT); //gpio_turnBrakeLightsOn()
-// 		digitalWrite(PIN_BRAKE_uC,HIGH);
-// }	
-// else
-// {
-// 	pinMode(PIN_BRAKE_uC,INPUT);
-// 	digitalWrite(PIN_BRAKE_uC,LOW);
-// }
+uint8_t brakeLights_handler(void)
+{
+	if     (gpio_getMCM_CMDPWR_percent() < TURN_BRAKE_LIGHTS_ON_BELOW_CMDPWR_VALUE_PERCENT) { gpio_brakeLights_turnOn();   }
+	else if(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)                            { gpio_brakeLights_turnOff();  }
+	else                                                                                    { gpio_brakeLights_floatPin(); }
+}
