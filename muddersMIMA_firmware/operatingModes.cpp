@@ -54,9 +54,9 @@ void mode_manualControl_new(void)
 			useStoredJoystickValue = YES;
 		}
 
-		//disable stored joystick value if regen too high (e.g. when braking hard)
-		//JTS2doLater: Add brake and clutch disable
-		if(ecm_getCMDPWR_percent() < 30)
+		//disable stored joystick value if user is braking
+		//JTS2doLater: Add clutch disable
+		if(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)
 		{
 			useStoredJoystickValue = NO;
 			joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;
@@ -124,8 +124,8 @@ void operatingModes_handler(void)
 	}
 
 	if     (toggleState == TOGGLE_POSITION0) { mode_OEM();               }
-	else if(toggleState == TOGGLE_POSITION1) { mode_manualControl_old(); }
-	else if(toggleState == TOGGLE_POSITION2) { mode_manualControl_new(); }
+	else if(toggleState == TOGGLE_POSITION1) { mode_manualControl_new(); }
+	else if(toggleState == TOGGLE_POSITION2) { mode_manualControl_old(); }
 	else /* this should never happen */      { mode_OEM();               }
 
 	toggleState_previous = toggleState;

@@ -23,7 +23,7 @@ uint8_t adc_readJoystick_percent(void)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-uint8_t adc_getCMDPWR_percent(void)
+uint8_t adc_getECM_CMDPWR_percent(void)
 { 
 	uint16_t adcResult_counts = analogRead(PIN_CMDPWR_ECM); //10b ADC
 	uint8_t percent = (uint8_t)(adcResult_counts * 0.0978); //counts/1023*100
@@ -35,7 +35,7 @@ uint8_t adc_getCMDPWR_percent(void)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-uint8_t adc_getMAMODE1_percent(void)
+uint8_t adc_getECM_MAMODE1_percent(void)
 {
 	uint16_t adcResult_counts = analogRead(PIN_MAMODE1_ECM); //10b ADC
 	uint8_t percent = (uint8_t)(adcResult_counts * 0.0978); //counts/1023*100
