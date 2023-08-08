@@ -76,6 +76,10 @@ void debugUSB_printOEMsignals(void)
 	if(gpio_getClutchPosition() == CLUTCH_PEDAL_PRESSED) { Serial.print(F("Pressed, ")); }
 	else                                                 { Serial.print(F("Released,")); }
 
+	Serial.print(F(" BRAKE:"));
+	if(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON) { Serial.print(F("Pressed, ")); }
+	else                                                    { Serial.print(F("Released,")); }
+
 	Serial.print(F(" CMDPWR:"));
 	Serial.print( ecm_getCMDPWR_percent() );
 	Serial.print('%');

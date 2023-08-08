@@ -23,12 +23,22 @@ void USB_userInterface_runTestCode(uint8_t testToRun)
 	else if(testToRun == '1')
 	{
 		Serial.print(F("\nRunning TEST1: Brake Lights On"));
-		digitalWrite(PIN_BRAKE,HIGH);
+		brakeLights_setControlMode(BRAKE_LIGHT_FORCE_ON);
 	}
 	else if(testToRun == '2')
 	{
 		Serial.print(F("\nRunning TEST2: Brake Lights Off"));
-		digitalWrite(PIN_BRAKE,LOW);
+		brakeLights_setControlMode(BRAKE_LIGHT_FORCE_OFF);
+	}
+	else if(testToRun == '3')
+	{
+		Serial.print(F("\nRunning TEST3: Brake Lights Pulse"));
+		brakeLights_setControlMode(BRAKE_LIGHT_PULSE);
+	}
+	else if(testToRun == '4')
+	{
+		Serial.print(F("\nRunning TEST3: Brake Lights Automatic"));
+		brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 	}
 }
 
