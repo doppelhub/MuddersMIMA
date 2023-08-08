@@ -115,3 +115,11 @@ void gpio_brakeLights_floatPin(void)
 {
 	pinMode(PIN_BRAKE,INPUT);
 }
+
+////////////////////////////////////////////////////////////////////////////////////
+
+bool gpio_getClutchPosition(void)
+{
+	if(digitalRead(PIN_CLUTCH) == LOW) { return CLUTCH_PEDAL_PRESSED;  }
+	else                               { return CLUTCH_PEDAL_RELEASED; }
+}

@@ -7,7 +7,7 @@
 
 uint8_t state_MAMODE1 = MAMODE1_STATE_IS_UNDEFINED;
 bool    state_MAMODE2 = MAMODE2_STATE_IS_REGEN_STANDBY;
-uint8_t percent_CMDPWR = 50; 
+uint8_t percent_CMDPWR = 50;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 

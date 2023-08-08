@@ -72,8 +72,20 @@ void debugUSB_printOEMsignals(void)
 		case MAMODE1_STATE_IS_UNDEFINED: Serial.print(F("Error,  ")); break;
 	}
 
+	Serial.print(F(" CLUTCH:"));
+	if(gpio_getClutchPosition() == CLUTCH_PEDAL_PRESSED) { Serial.print(F("Pressed, ")); }
+	else                                                 { Serial.print(F("Released,")); }
+
 	Serial.print(F(" CMDPWR:"));
 	Serial.print( ecm_getCMDPWR_percent() );
+	Serial.print('%');
+
+	Serial.print(F(" TPS:"));
+	Serial.print( adc_getECM_TPS_percent() );
+	Serial.print('%');
+
+	Serial.print(F(" MAP:"));
+	Serial.print( adc_getECM_MAP_percent() );
 	Serial.print('%');
 }
 

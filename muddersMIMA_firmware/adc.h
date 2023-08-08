@@ -19,4 +19,8 @@
 
 	uint8_t adc_getECM_MAMODE1_percent(void);
 
+	uint8_t adc_getECM_MAP_percent(void);
+
+	uint8_t adc_getECM_TPS_percent(void);
+
 #endif

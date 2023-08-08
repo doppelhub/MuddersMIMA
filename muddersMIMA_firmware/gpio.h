@@ -12,6 +12,9 @@
 	#define BRAKE_LIGHTS_ARE_ON  true
 	#define BRAKE_LIGHTS_ARE_OFF false
 
+	#define CLUTCH_PEDAL_PRESSED  true
+	#define CLUTCH_PEDAL_RELEASED false
+
 	void gpio_begin(void);
 
 	bool gpio_getButton_momentary(void);
@@ -35,5 +38,7 @@
 	void gpio_brakeLights_turnOff(void);
 
 	void gpio_brakeLights_floatPin(void);
+
+	bool gpio_getClutchPosition(void);
 
 #endif
