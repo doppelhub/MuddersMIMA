@@ -22,23 +22,19 @@ void USB_userInterface_runTestCode(uint8_t testToRun)
 	if     (testToRun == STRING_TERMINATION_CHARACTER) { Serial.print(F("\nError: Test not specified")); }
 	else if(testToRun == '1')
 	{
-		Serial.print(F("\nRunning TEST1: Brake Lights On"));
-		brakeLights_setControlMode(BRAKE_LIGHT_FORCE_ON);
+		Serial.print(F("\nRunning TEST1: "));
 	}
 	else if(testToRun == '2')
 	{
-		Serial.print(F("\nRunning TEST2: Brake Lights Off"));
-		brakeLights_setControlMode(BRAKE_LIGHT_FORCE_OFF);
+		Serial.print(F("\nRunning TEST2: "));
 	}
 	else if(testToRun == '3')
 	{
-		Serial.print(F("\nRunning TEST3: Brake Lights Pulse"));
-		brakeLights_setControlMode(BRAKE_LIGHT_PULSE);
+		Serial.print(F("\nRunning TEST3: "));
 	}
 	else if(testToRun == '4')
 	{
-		Serial.print(F("\nRunning TEST3: Brake Lights Automatic"));
-		brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
+		Serial.print(F("\nRunning TEST4: "));
 	}
 }
 

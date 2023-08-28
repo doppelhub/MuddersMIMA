@@ -9,13 +9,20 @@ bool useStoredJoystickValue = NO; //JTS2doLater: I'm not convinced this is requi
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void mode_OEM(void) { mcm_passUnmodifiedSignals_fromECM(); }
+void mode_OEM(void)
+{
+	brakeLights_setControlMode(BRAKE_LIGHT_OEM); 
+	mcm_passUnmodifiedSignals_fromECM();
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 //PHEV mode
-void mode_disableRegen(void)
+//JTS2doNow: implement manual regen
+void mode_manualRegen_autoAssist(void)
 {
+	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
+
 	if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE, JOYSTICK_NEUTRAL_NOM_PERCENT); } //ignore regen request
 	else /* (ECM not requesting regen) */                { mcm_passUnmodifiedSignals_fromECM(); } //pass all other signals through
 }
@@ -25,6 +32,8 @@ void mode_disableRegen(void)
 //LiControl completely ignores ECM signals (including autostop, autostart, prestart, etc)
 void mode_manualControl_old(void)
 {
+	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
+
 	uint16_t joystick_percent = adc_readJoystick_percent();
 
 	if     (joystick_percent < JOYSTICK_MIN_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too low
@@ -38,6 +47,8 @@ void mode_manualControl_old(void)
 
 void mode_manualControl_new(void)
 {
+	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
+
 	if( (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN ) ||
 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE  ) ||
 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)  )
@@ -89,6 +100,7 @@ void mode_manualControl_new(void)
 
 		//Therefore, we need to honor the ECM's PRESTART request for the first few seconds after keyON (so the HVDC bus voltage can charge to the pack voltage).
 
+		//JTS2doNow: if SoC too low (get from LiBCM), pass through unmodified signal (which will disable DCDC) 
 		if(millis() < (time_latestKeyOn_ms() + PERIOD_AFTER_KEYON_WHERE_PRESTART_ALLOWED_ms)) { mcm_passUnmodifiedSignals_fromECM(); } //key hasn't been on long enough
 		else { mcm_setAllSignals(MAMODE1_STATE_IS_AUTOSTOP, JOYSTICK_NEUTRAL_NOM_PERCENT); } //JTS2doLater: This prevents user from manually assist-starting IMA
 
