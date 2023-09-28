@@ -29,5 +29,6 @@
   #include "spiToLiBCM.h"
   #include "operatingModes.h"
   #include "brakeLights.h"
+  #include "engine_signals.h"
 
 #endif

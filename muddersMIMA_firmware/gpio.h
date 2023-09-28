@@ -41,4 +41,6 @@
 
 	bool gpio_getClutchPosition(void);
 
+	bool gpio_engineRPM_getPinState(void);
+
 #endif

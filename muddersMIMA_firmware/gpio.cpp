@@ -123,3 +123,7 @@ bool gpio_getClutchPosition(void)
 	if(digitalRead(PIN_CLUTCH) == LOW) { return CLUTCH_PEDAL_RELEASED; }
 	else                               { return CLUTCH_PEDAL_PRESSED;  }
 }
+
+////////////////////////////////////////////////////////////////////////////////////
+
+bool gpio_engineRPM_getPinState(void) { return digitalRead(PIN_NEP); }

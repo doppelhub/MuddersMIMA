@@ -18,6 +18,7 @@
 void setup()  
 {
 	gpio_begin();
+	engineSignals_begin();
 	Serial.begin(115200); //USB
 	Serial.print(F("\n\nWelcome to LiControl v" FW_VERSION ", " BUILD_DATE "\nType '$HELP' for more info\n"));
 }

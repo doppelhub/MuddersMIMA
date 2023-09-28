@@ -91,6 +91,9 @@ void debugUSB_printOEMsignals(void)
 	Serial.print(F(" MAP:"));
 	Serial.print( adc_getECM_MAP_percent() );
 	Serial.print('%');
+
+	Serial.print(F(" RPM:"));
+	Serial.print( engineSignals_getLatestRPM() );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
