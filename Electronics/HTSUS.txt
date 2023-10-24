@@ -1,0 +1,5 @@
+HSTUS
+international shipping tariff code
+8537.10.60.00
+"Motor Control Board"
+"HSTUS" (actually HTSUS)
