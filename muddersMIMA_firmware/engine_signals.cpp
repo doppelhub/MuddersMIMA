@@ -20,7 +20,7 @@ ISR(PCINT0_vect)
 
 		uint32_t periodBetweenTicks_us = tachometerTick_now_us - tachometerTick_previous_us;
 
-		latestEngineRPM = ONE_MINUTE_IN_MICROSECONDS / periodBetweenTicks_us;
+		latestEngineRPM = ONE_MINUTE_IN_MICROSECONDS / (periodBetweenTicks_us * 3 / 2);
 
 		tachometerTick_previous_us = tachometerTick_now_us;
 	}
