@@ -94,6 +94,9 @@ void debugUSB_printOEMsignals(void)
 
 	Serial.print(F(" RPM:"));
 	Serial.print( engineSignals_getLatestRPM() );
+
+    Serial.print(F(" MPH:"));
+	Serial.print( engineSignals_getLatestVehicleMPH() );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

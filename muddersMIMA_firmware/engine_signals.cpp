@@ -6,6 +6,7 @@
 #include "muddersMIMA.h"
 
 volatile uint16_t latestEngineRPM = 0;
+volatile uint16_t latestVehicleMPH = 0;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -28,7 +29,29 @@ ISR(PCINT0_vect)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+ISR(PCINT2_vect)
+{
+	static uint32_t vssTick_previous_us = 0;
+
+	if(gpio_VSS_getPinState() == HIGH)
+	{
+		uint32_t vssTick_now_us = micros();
+
+		uint32_t periodBetweenTicks_us = vssTick_now_us - vssTick_previous_us;
+
+		latestVehicleMPH = ONE_HOUR_IN_MICROSECONDS / periodBetweenTicks_us / 4250;
+
+		vssTick_previous_us = vssTick_now_us;
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 uint16_t engineSignals_getLatestRPM(void) { return latestEngineRPM; }
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+uint16_t engineSignals_getLatestVehicleMPH(void) { return latestVehicleMPH; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -37,6 +60,9 @@ void engineSignals_begin(void)
 	cli();
 	PCMSK0 = (1<<PCINT0); //only pin D8 will generate a pin change interrupt on ISR PCINT0_vect (which supports D8:D13)
 	PCICR |= (1<<PCIE0); //enable pin change interrupts on port B (D8:D13)
+
+	PCMSK2 = (1<<PCINT23); //On port D, only pin D7 will generate a pin change interrupt, ISR PCINT2_vect
+	PCICR |= (1<<PCIE2); //enable pin change interrupts on port D (D8:D13)
 	sei();
 }
 
