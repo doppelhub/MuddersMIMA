@@ -34,7 +34,10 @@ uint16_t engineSignals_getLatestRPM(void) { return latestEngineRPM; }
 
 void engineSignals_begin(void)
 {
+	cli();
 	PCMSK0 = (1<<PCINT0); //only pin D8 will generate a pin change interrupt on ISR PCINT0_vect (which supports D8:D13)
+	PCICR |= (1<<PCIE0); //enable pin change interrupts on port B (D8:D13)
+	sei();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
