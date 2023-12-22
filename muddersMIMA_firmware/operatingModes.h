@@ -4,6 +4,7 @@
 #ifndef modes_h
 	#define modes_h
 
+	#define FAS_MAX_STOPPED_RPM			500
 	void operatingModes_handler(void);
 
 #endif
