@@ -54,7 +54,7 @@ void mode_manualControl_new(void)
 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)  )
 	{
 		//ECM is sending assist, idle, or regen signal...
-		//but we're in manual mode, so use joystick value instead (either previously stored or value right now)
+		//but we're in blended manual mode, so combine its signal cleverly with the joystick (either previously stored or value right now)
 
 		uint16_t joystick_percent = adc_readJoystick_percent();
 
@@ -75,8 +75,14 @@ void mode_manualControl_new(void)
 
 		//use stored joystick value if conditions are right
 		if( (useStoredJoystickValue == YES                ) && //user previously pushed button
-			(joystick_percent > JOYSTICK_NEUTRAL_MIN_PERCENT) && //joystick is neutral
-			(joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT)  ) //joystick is neutral
+			( ( (joystick_percent > JOYSTICK_NEUTRAL_MIN_PERCENT) && //joystick is neutral, or
+			    (joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT)
+              ) ||
+              ( (joystick_percent < joystick_percent_stored) && //joystick is less than stored value if assist, or
+                (joystick_percent > JOYSTICK_NEUTRAL_MAX_PERCENT)
+              ) ||
+              ( (joystick_percent > joystick_percent_stored) && //joystick is more than stored value if regen
+                (joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) ) ) )
 		{
 			//replace actual joystick position with previously stored value
 			joystick_percent = joystick_percent_stored;
