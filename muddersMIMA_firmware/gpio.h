@@ -43,4 +43,6 @@
 
 	bool gpio_engineRPM_getPinState(void);
 
+	bool gpio_VSS_getPinState(void);
+
 #endif
