@@ -27,6 +27,7 @@
   #include "ecm_signals.h"
   #include "mcm_signals.h"
   #include "spiToLiBCM.h"
+  #include "2d_map.h"
   #include "operatingModes.h"
   #include "brakeLights.h"
   #include "engine_signals.h"
