@@ -87,6 +87,22 @@ void mode_manualControl_new(void)
 			//replace actual joystick position with previously stored value
 			joystick_percent = joystick_percent_stored;
 		}
+
+		uint16_t ecm_cmdpwr_percent = ecm_getCMDPWR_percent();
+
+		//use the ECM-commanded assist if conditions are right
+		if( ( ( (joystick_percent > JOYSTICK_NEUTRAL_MIN_PERCENT) && //joystick is neutral, and not due to a stored neutral, or
+			    (joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT)
+              ) ||
+              ( (joystick_percent < ecm_cmdpwr_percent) && //joystick is less than commanded value if assist, or
+                (joystick_percent > JOYSTICK_NEUTRAL_MAX_PERCENT)
+              ) ||
+              ( (joystick_percent > ecm_cmdpwr_percent) && //joystick is more than commanded value if regen
+                (joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) ) ) )
+		{
+			//replace actual joystick position with the ECM's CMDPWR value
+			joystick_percent = ecm_cmdpwr_percent;
+		}
 		
 		//send assist/idle/regen value to MCM
 		if     (joystick_percent < JOYSTICK_MIN_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too low
