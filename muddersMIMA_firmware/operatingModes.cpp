@@ -47,7 +47,6 @@ void mode_manualControl_old(void)
 
 void mode_manualControl_new(void)
 {
-	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 
 	if( (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN ) ||
 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE  ) ||
@@ -102,6 +101,9 @@ void mode_manualControl_new(void)
 		{
 			//replace actual joystick position with the ECM's CMDPWR value
 			joystick_percent = ecm_cmdpwr_percent;
+			brakeLights_setControlMode(BRAKE_LIGHT_OEM);
+		} else {
+			brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 		}
 		
 		//send assist/idle/regen value to MCM
@@ -114,6 +116,7 @@ void mode_manualControl_new(void)
 	}
 	else if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_PRESTART)
 	{
+		brakeLights_setControlMode(BRAKE_LIGHT_OEM);
 		//prevent DCDC disable when user regen-stalls car
 
 		//DCDC converter must be disabled when the key first turns on.
@@ -132,6 +135,7 @@ void mode_manualControl_new(void)
 	}
 	else //ECM is sending autostop, start, or undefined signal
 	{
+		brakeLights_setControlMode(BRAKE_LIGHT_OEM);
 		//pass these signals through unmodified (so autostop works properly)
 		mcm_passUnmodifiedSignals_fromECM();
 
