@@ -4,10 +4,11 @@
 	#define BUTTON_PRESSED      0
 	#define BUTTON_NOT_PRESSED  1
 
-	#define TOGGLE_POSITION0 3
+	#define TOGGLE_UNDEFINED 4
+	#define TOGGLE_POSITION0 3 //both lines left floating
 	#define TOGGLE_POSITION1 1
 	#define TOGGLE_POSITION2 2
-	#define TOGGLE_UNDEFINED 0
+	#define TOGGLE_POSITION3 0 //both lines held low //LiControl mode switch unsupported
 
 	#define BRAKE_LIGHTS_ARE_ON  true
 	#define BRAKE_LIGHTS_ARE_OFF false
