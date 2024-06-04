@@ -2,13 +2,16 @@
 
 //LiControl manual IMA Controller firmware
 
+//JTS2doLater: Convert tabs to 4 spaces once there aren't any open pull requests
+
 #include "muddersMIMA.h"
 
 //To update the firmware:
 	//1 : Open this file in the Arduino application
 	//2 : Plug the LiControl USB cable into your computer.
 	//3 : In the 'Tools' menu, select "Board:_________" -> "Arduino AVR Boards" -> "Arduino Nano"
-	//4 : In the 'Tools' menu, select "Port" -> <<your device's COM port>>
+	//4a: In the 'Tools' menu, select "Port" -> <<your device's COM port>>
+    //4b: If device not shown, install CH340 driver (learn.sparkfun.com/tutorials/how-to-install-ch340-drivers)
 	//5a: Push the momentary button down with your finger
 	//5b: Keep holding this button down until the upload process completes
 	//6 : Click the upload button

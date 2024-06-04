@@ -135,10 +135,10 @@ void operatingModes_handler(void)
 		useStoredJoystickValue = NO;
 	}
 
-	if     (toggleState == TOGGLE_POSITION0) { mode_OEM();               }
-	else if(toggleState == TOGGLE_POSITION1) { mode_manualControl_new(); }
-	else if(toggleState == TOGGLE_POSITION2) { mode_manualControl_old(); }
-	else /* this should never happen */      { mode_OEM();               }
+	if     (toggleState == TOGGLE_POSITION0) { MODE0_BEHAVIOR(); } //see #define substitutions in config.h
+	else if(toggleState == TOGGLE_POSITION1) { MODE1_BEHAVIOR(); }
+	else if(toggleState == TOGGLE_POSITION2) { MODE2_BEHAVIOR(); }
+	else /* hidden 'mode3' (unsupported) */  { MODE0_BEHAVIOR(); }
 
 	toggleState_previous = toggleState;
 }

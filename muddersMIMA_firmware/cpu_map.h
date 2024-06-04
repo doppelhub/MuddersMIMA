@@ -8,21 +8,8 @@
 #define cpu_map_h
 
   #ifdef CPU_MAP_ATMEGA328p
-      #ifdef HW_PROTO
-            #define PIN_USER_JOYSTICK  A0
-            #define PIN_MAMODE1_ECM    A1
-            #define PIN_CMDPWR_ECM     A2
-            #define PIN_USER_MOMENTARY A3
-            #define PIN_USER_TOGGLE1   A4
-            #define PIN_USER_TOGGLE2   A5
 
-            #define PIN_MAMODE2_ECM     8
-            #define PIN_CMDPWR_MCM     10
-            #define PIN_MAMODE1_MCM    11
-            #define PIN_MAMODE2_MCM    12
-            #define PIN_SPI_SCK_LED    13
-
-      #elif defined HW_REVA_REVB
+      #if defined HW_REVA_REVB
             #define PIN_USER_JOYSTICK  A0
             #define PIN_MAMODE1_ECM    A1
             #define PIN_CMDPWR_ECM     A2
@@ -41,9 +28,9 @@
             #define PIN_NEP             8
             #define PIN_CMDPWR_MCM      9
             #define PIN_SPI_CS         10
-            //#define PIN_SPI_MOSI       11 //default values //already defined
-            //#define PIN_SPI_MISO       12
-            //#define PIN_SPI_SCK        13
+            //#define PIN_SPI_MOSI     11 //default values //already defined
+            //#define PIN_SPI_MISO     12
+            //#define PIN_SPI_SCK      13
 
       #endif
 
