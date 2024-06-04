@@ -33,17 +33,17 @@ void debugUSB_displayUptime_seconds(void)
 
 void debugUSB_printButtonStates(void)
 {	
-	Serial.print(F("\nButton: "));
+	Serial.print(F("\nButton:"));
 	if(gpio_getButton_momentary() == BUTTON_NOT_PRESSED) { Serial.print(F("UP")); }
 	else                                                 { Serial.print(F("DN")); }
 
-	Serial.print(F(", Mode: "));
+	Serial.print(F(", Mode"));
 	switch(gpio_getButton_toggle() )
 	{
-		case TOGGLE_POSITION0: Serial.print(F("0: Stock (do not modify OEM signals),   ")); break;
-		case TOGGLE_POSITION1: Serial.print(F("1: Blended (ignore OEM assist & regen), ")); break;
-		case TOGGLE_POSITION2: Serial.print(F("2: Manual (ignore all OEM signals),     ")); break;
-		case TOGGLE_UNDEFINED: Serial.print(F("TOGGLE SWITCH SHORTED! ")); break;
+		case TOGGLE_POSITION0: Serial.print(F("0:ECM only,    ")); break;
+		case TOGGLE_POSITION1: Serial.print(F("1:blend,       ")); break;
+		case TOGGLE_POSITION2: Serial.print(F("2:ECM ignored, ")); break;
+		case TOGGLE_POSITION3: Serial.print(F("3:hidden,      ")); break;
 	}
 
 	Serial.print(F("Joystick: "));
@@ -59,6 +59,8 @@ void debugUSB_printOEMsignals(void)
 	else                                                  { Serial.print(F("Reg/Idle,")); }
 
 	Serial.print(F(" MAMODE1:"));
+	Serial.print(adc_getECM_MAMODE1_percent());
+	Serial.print('%');
 	switch( ecm_getMAMODE1_state() )
 	{
 		case MAMODE1_STATE_IS_ERROR_LO:  Serial.print(F("Line LO, ")); break;
@@ -69,7 +71,7 @@ void debugUSB_printOEMsignals(void)
 		case MAMODE1_STATE_IS_AUTOSTOP:  Serial.print(F("AutoStop,")); break;
 		case MAMODE1_STATE_IS_START:     Serial.print(F("Starting,")); break;
 		case MAMODE1_STATE_IS_ERROR_HI:  Serial.print(F("Line HI, ")); break;
-		case MAMODE1_STATE_IS_UNDEFINED: Serial.print(F("Error,  ")); break;
+		case MAMODE1_STATE_IS_UNDEFINED: Serial.print(F("Error,   ")); break;
 	}
 
 	Serial.print(F(" CLUTCH:"));

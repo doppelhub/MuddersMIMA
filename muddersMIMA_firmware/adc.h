@@ -13,6 +13,9 @@
 	#define JOYSTICK_NEUTRAL_MAX_PERCENT      (JOYSTICK_NEUTRAL_NOM_PERCENT + JOYSTICK_NEUTRAL_ACCURACY_PERCENT)
 	#define JOYSTICK_NEUTRAL_MIN_PERCENT      (JOYSTICK_NEUTRAL_NOM_PERCENT - JOYSTICK_NEUTRAL_ACCURACY_PERCENT)
 
+	#define ADC_HARDWARE_CORRECTION_MAMODE1_PERCENT 3 //corrects 1 us rising edge delay from Q08/Q11/Q12 
+	#define ADC_HARDWARE_CORRECTION_CMDPWR_PERCENT  1 //corrects 1 us rising edge delay from Q07/Q09/Q10 
+
 	uint8_t adc_readJoystick_percent(void);
 
 	uint8_t adc_getECM_CMDPWR_percent(void);
