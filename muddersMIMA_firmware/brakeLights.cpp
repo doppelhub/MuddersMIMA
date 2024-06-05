@@ -30,6 +30,24 @@ void pulseBrakeLights(void)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
+void unlatchSignal_BRAKE_uC(void)
+{
+	//LiControl's high-side driver remains latched on after user removes foot from brake pedal
+	//thus, the brake lights will stay on unless we briefly force the high-side driver off 
+	if (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)
+	{
+		//either the brake pedal is pressed or the high-side driver is latched (we don't know)
+		gpio_brakeLights_turnOff(); //if brake released, pulling BRAKE_uC low turns high-side driver off
+		delayMicroseconds(100); //if brake released, BRAKE_RAW discharges to ground in 75 us
+		//if brake pedal released, BRAKE_uC is now low (~0.7 volts due to diode drop)
+		//if brake pedal pressed,  BRAKE_uC takes 200 us to pullup to 4V ~= Vih(min)
+	}
+	
+	gpio_brakeLights_floatPin(); //allows LiControl to check brake status
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
 uint8_t brakeLights_handler(void)
 {
 	if(brakeLightMode == BRAKE_LIGHT_AUTOMATIC)
@@ -38,16 +56,12 @@ uint8_t brakeLights_handler(void)
 
 		//brake light control logic
 		//JTS2doNow: When brake pressed, gpio_getBrakePosition_bool() alternates between "Lights ON" & "Lights OFF"
-		if     (joystickPercent < JOYSTICK_MIN_ALLOWED_PERCENT)                { gpio_brakeLights_turnOff();  } //joystick input too low	
-		else if(joystickPercent < TURN_BRAKE_LIGHTS_ON_BELOW_JOYSTICK_PERCENT) { gpio_brakeLights_turnOn();   } //strong regen
-		else if(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)           { gpio_brakeLights_turnOff();  }
-		else                                                                   { gpio_brakeLights_floatPin(); }
+		if     (joystickPercent < JOYSTICK_MIN_ALLOWED_PERCENT)                { gpio_brakeLights_turnOff(); } //joystick input too low	
+		else if(joystickPercent < TURN_BRAKE_LIGHTS_ON_BELOW_JOYSTICK_PERCENT) { gpio_brakeLights_turnOn();  } //strong regen
+		else                                                                   { unlatchSignal_BRAKE_uC();   }
 	}
-	else if(brakeLightMode == BRAKE_LIGHT_OEM)
-	{
-		if (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON) { gpio_brakeLights_turnOff();  }
-		else                                                     { gpio_brakeLights_floatPin(); }
-	}
-	else if(brakeLightMode == BRAKE_LIGHT_FORCE_ON) { gpio_brakeLights_turnOn();  }
-	else if(brakeLightMode == BRAKE_LIGHT_PULSE)    { pulseBrakeLights();         }
+	else if(brakeLightMode == BRAKE_LIGHT_MONITOR_ONLY) { unlatchSignal_BRAKE_uC();   }
+	else if(brakeLightMode == BRAKE_LIGHT_OEM)          { gpio_brakeLights_turnOff(); }
+	else if(brakeLightMode == BRAKE_LIGHT_FORCE_ON)     { gpio_brakeLights_turnOn();  }
+	else if(brakeLightMode == BRAKE_LIGHT_PULSE)        { pulseBrakeLights();         }
 }

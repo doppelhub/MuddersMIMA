@@ -19,9 +19,9 @@ void mode_OEM(void)
 
 //PHEV mode
 //JTS2doNow: implement manual regen
-void mode_manualRegen_autoAssist(void)
+void mode_INWORK_manualRegen_autoAssist(void)
 {
-	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
+	brakeLights_setControlMode(BRAKE_LIGHT_OEM);
 
 	if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE, JOYSTICK_NEUTRAL_NOM_PERCENT); } //ignore regen request
 	else /* (ECM not requesting regen) */                { mcm_passUnmodifiedSignals_fromECM(); } //pass all other signals through
@@ -137,7 +137,7 @@ void mode_manualControl_new(void)
 	//modified to always enable DCDC when key is on
 void mode_INWORK_PHEV_mudder(void)
 {
-	brakeLights_setControlMode(BRAKE_LIGHT_OEM); //JTS2doLater: if possible, add strong regen brake lights
+	brakeLights_setControlMode(BRAKE_LIGHT_MONITOR_ONLY); //JTS2doLater: if possible, add strong regen brake lights
 
 	if( (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN ) ||
 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE  ) ||

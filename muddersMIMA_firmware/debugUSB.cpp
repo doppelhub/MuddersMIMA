@@ -46,7 +46,7 @@ void debugUSB_printButtonStates(void)
 		case TOGGLE_POSITION3: Serial.print('3'); break;
 	}
 
-	Serial.print(F("Joystick: "));
+	Serial.print(F(", Joystick: "));
 	Serial.print(adc_readJoystick_percent(),DEC);
 }
 
