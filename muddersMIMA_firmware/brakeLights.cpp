@@ -38,12 +38,16 @@ uint8_t brakeLights_handler(void)
 
 		//brake light control logic
 		//JTS2doNow: When brake pressed, gpio_getBrakePosition_bool() alternates between "Lights ON" & "Lights OFF"
-		if     (joystickPercent < JOYSTICK_MIN_ALLOWED_PERCENT)                { gpio_brakeLights_turnOff(); } //joystick input too low	
-		else if(joystickPercent < TURN_BRAKE_LIGHTS_ON_BELOW_JOYSTICK_PERCENT) { gpio_brakeLights_turnOn();  } //strong regen
+		if     (joystickPercent < JOYSTICK_MIN_ALLOWED_PERCENT)                { gpio_brakeLights_turnOff();  } //joystick input too low	
+		else if(joystickPercent < TURN_BRAKE_LIGHTS_ON_BELOW_JOYSTICK_PERCENT) { gpio_brakeLights_turnOn();   } //strong regen
 		else if(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)           { gpio_brakeLights_turnOff();  }
 		else                                                                   { gpio_brakeLights_floatPin(); }
 	}
+	else if(brakeLightMode == BRAKE_LIGHT_OEM)
+	{
+		if (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON) { gpio_brakeLights_turnOff();  }
+		else                                                     { gpio_brakeLights_floatPin(); }
+	}
 	else if(brakeLightMode == BRAKE_LIGHT_FORCE_ON) { gpio_brakeLights_turnOn();  }
-	else if(brakeLightMode == BRAKE_LIGHT_OEM)      { gpio_brakeLights_turnOff(); }
 	else if(brakeLightMode == BRAKE_LIGHT_PULSE)    { pulseBrakeLights();         }
 }
