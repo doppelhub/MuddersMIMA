@@ -30,7 +30,7 @@ void mode_INWORK_manualRegen_autoAssist(void)
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 //LiControl completely ignores ECM signals (including autostop, autostart, prestart, etc)
-void mode_manualControl_old(void)
+void mode_manualAssistRegen_ignoreECM(void)
 {
 	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 
@@ -45,7 +45,7 @@ void mode_manualControl_old(void)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void mode_manualControl_new(void)
+void mode_manualAssistRegen_withAutoStartStop(void)
 {
 	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 
