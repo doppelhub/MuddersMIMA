@@ -20,6 +20,7 @@
 	uint8_t ecm_getMAMODE1_state(void);
 	bool    ecm_getMAMODE2_state(void);
 	uint8_t ecm_getCMDPWR_percent(void);
+	uint8_t ecm_getRemappedCMDPWR_percent(void);
 
 	void ecm_handler(void);
 

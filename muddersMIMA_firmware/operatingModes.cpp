@@ -123,11 +123,11 @@ void mode_manualControl_new(void)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-//All OEM signals are passed through unmodified, except:
+//GOAL: All OEM signals are passed through unmodified, except:
 //CMDPWR assist
 	//LiControl uses strongest assist request (user or ECM), except that;
 	//pressing the momentary button stores the joystick position (technically the value is stored on button release)
-	//after pressing the momentary button, all ECM assist equests are ignored until the user either brakes or (temporarily) changes modes   
+	//after pressing the momentary button, all ECM assist requests are ignored until the user either brakes or (temporarily) changes modes   
 	//manual joystick assist requests are allowed even after pushing momentary button; stored value resumes once joystick is neutral again
 //CMDPWR regen
 	//LiControl ignores ECM regen requests, unless user is braking
@@ -135,7 +135,7 @@ void mode_manualControl_new(void)
 	//manual joystick regen request always overrides ECM regen request
 //MAMODE1 prestart
 	//modified to always enable DCDC when key is on
-void mode_PHEV_mudder(void)
+void mode_INWORK_PHEV_mudder(void)
 {
 	brakeLights_setControlMode(BRAKE_LIGHT_OEM); //JTS2doLater: if possible, add strong regen brake lights
 

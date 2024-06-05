@@ -17,6 +17,32 @@ uint8_t ecm_getCMDPWR_percent(void) { return percent_CMDPWR; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+uint8_t ecm_getRemappedCMDPWR_percent(void)
+{
+	//this LUT:
+		//reduces light regen
+		//reduces light assist
+		//boosts moderate and heavy assist
+	const uint8_t remap_CMDPWR[101] = { //input: [percent_CMDPWR] //returns modified CMDPWR
+	     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //Measured ECM CMDPWR % is 00% to 09%
+	    10,11,12,13,14,15,16,17,18,19, //Measured ECM CMDPWR % is 10% to 19%
+	    20,22,24,26,28,30,32,34,36,38, //Measured ECM CMDPWR % is 20% to 29%
+	    39,40,41,42,43,44,45,45,46,46, //Measured ECM CMDPWR % is 30% to 39%
+	    47,47,47,48,48,49,49,50,50,50, //Measured ECM CMDPWR % is 40% to 49%
+	    50,50,50,51,51,51,52,52,53,53, //Measured ECM CMDPWR % is 50% to 59%
+	    54,55,56,59,62,65,67,70,72,74, //Measured ECM CMDPWR % is 60% to 69%
+	    76,78,80,81,82,83,84,85,86,87, //Measured ECM CMDPWR % is 70% to 79%
+	    87,88,88,89,89,90,90,90,90,90, //Measured ECM CMDPWR % is 80% to 89%
+	    91,92,93,94,95,96,97,98,99,99, //Measured ECM CMDPWR % is 90% to 99%
+	    100,                           //Measured ECM CMDPWR % is 100%
+	}; //LUT derivation: ../muddersMIMA_firmware/Derivations/LUT - Lookup Table Derivations.ods
+	//Example: if the ECM sends 75% on CMDPWR, "remap_CMDPWR[75]" returns 83% (which boosts assist)
+
+	return remap_CMDPWR[percent_CMDPWR];
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 void determinePercent_CMDPWR(void) { percent_CMDPWR = adc_getECM_CMDPWR_percent(); }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,7 +51,7 @@ void determinePercent_CMDPWR(void) { percent_CMDPWR = adc_getECM_CMDPWR_percent(
 void determineState_MAMODE2(void)
 {
 	if(gpio_getECM_MAMODE2_bool() == true) { state_MAMODE2 = MAMODE2_STATE_IS_REGEN_STANDBY; }
-	else                               { state_MAMODE2 = MAMODE2_STATE_IS_ASSIST;        }
+	else                                   { state_MAMODE2 = MAMODE2_STATE_IS_ASSIST;        }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
