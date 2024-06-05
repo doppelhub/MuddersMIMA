@@ -40,10 +40,10 @@ void debugUSB_printButtonStates(void)
 	Serial.print(F(", Mode"));
 	switch(gpio_getButton_toggle() )
 	{
-		case TOGGLE_POSITION0: Serial.print(F("0:ECM only,    ")); break;
-		case TOGGLE_POSITION1: Serial.print(F("1:blend,       ")); break;
-		case TOGGLE_POSITION2: Serial.print(F("2:ECM ignored, ")); break;
-		case TOGGLE_POSITION3: Serial.print(F("3:hidden,      ")); break;
+		case TOGGLE_POSITION0: Serial.print('0'); break;
+		case TOGGLE_POSITION1: Serial.print('1'); break;
+		case TOGGLE_POSITION2: Serial.print('2'); break;
+		case TOGGLE_POSITION3: Serial.print('3'); break;
 	}
 
 	Serial.print(F("Joystick: "));
