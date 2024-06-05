@@ -7,8 +7,8 @@
 	#define config_h
 	#include "muddersMIMA.h"  //For Arduino IDE compatibility
 
-	#define FW_VERSION "0.1.9"
-    #define BUILD_DATE "2024MAY30"
+	#define FW_VERSION "0.2.0"
+    #define BUILD_DATE "2024JUN05"
 
 	#define CPU_MAP_ATMEGA328p
     
@@ -19,20 +19,20 @@
 	//choose behavior when three position switch...
 	//...is in the '0' position
 		  #define MODE0_BEHAVIOR() mode_OEM()
-		//#define MODE0_BEHAVIOR() mode_manualControl_new();
-		//#define MODE0_BEHAVIOR() mode_manualControl_old();
+		//#define MODE0_BEHAVIOR() mode_manualAssistRegen_withAutoStartStop();
+		//#define MODE0_BEHAVIOR() mode_manualAssistRegen_ignoreECM();
 		//#define MODE0_BEHAVIOR() mode_INWORK_PHEV_mudder();
 
 	//...is in the '1' position
 		//#define MODE1_BEHAVIOR() mode_OEM()
-	  	  #define MODE1_BEHAVIOR() mode_manualControl_new();
-		//#define MODE1_BEHAVIOR() mode_manualControl_old();
+	  	  #define MODE1_BEHAVIOR() mode_manualAssistRegen_withAutoStartStop();
+		//#define MODE1_BEHAVIOR() mode_manualAssistRegen_ignoreECM();
 		//#define MODE1_BEHAVIOR() mode_INWORK_PHEV_mudder();
 
 	//...is in the '2' position
 		//#define MODE2_BEHAVIOR() mode_OEM()
-		//#define MODE2_BEHAVIOR() mode_manualControl_new();
-	  	  #define MODE2_BEHAVIOR() mode_manualControl_old();
+		//#define MODE2_BEHAVIOR() mode_manualAssistRegen_withAutoStartStop();
+	  	  #define MODE2_BEHAVIOR() mode_manualAssistRegen_ignoreECM();
 		//#define MODE2_BEHAVIOR() mode_INWORK_PHEV_mudder();
 
 #endif
