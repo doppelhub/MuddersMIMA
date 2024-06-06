@@ -28,12 +28,13 @@ void setup()
 
 void loop()
 {
+	adc_handler();
 	ecm_handler();
 	time_handler();
 	brakeLights_handler();
 	operatingModes_handler();
 	USB_userInterface_handler();
-	
+
 	debugUSB_printLatestData();
 
 	time_waitForLoopPeriod(); //wait here until next iteration

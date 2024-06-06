@@ -22,7 +22,7 @@ void mode_manualAssistRegen_ignoreECM(void)
 {
 	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 
-	uint16_t joystick_percent = adc_readJoystick_percent();
+	uint16_t joystick_percent = adc_getLatestJoystick_percent();
 
 	if     (joystick_percent < JOYSTICK_MIN_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too low
 	else if(joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN,  joystick_percent);             } //manual regen
@@ -44,7 +44,7 @@ void mode_manualAssistRegen_withAutoStartStop(void)
 		//ECM is sending assist, idle, or regen signal...
 		//but we're in manual mode, so use joystick value instead (either previously stored or value right now)
 
-		uint16_t joystick_percent = adc_readJoystick_percent();
+		uint16_t joystick_percent = adc_getLatestJoystick_percent();
 
 		if(gpio_getButton_momentary() == BUTTON_PRESSED)
 		{
@@ -145,7 +145,7 @@ void mode_INWORK_PHEV_mudder(void)
 	{
 		//ECM is sending assist, idle, or regen signal
 
-		uint8_t joystick_percent = adc_readJoystick_percent();
+		uint8_t joystick_percent = adc_getLatestJoystick_percent();
 		uint8_t ECM_CMDPWR_percent = ecm_getCMDPWR_percent();
 
 		if (ECM_CMDPWR_percent > joystick_percent) { joystick_percent = ECM_CMDPWR_percent; } //choose strongest assist request (user or ECM)

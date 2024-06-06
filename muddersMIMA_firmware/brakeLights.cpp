@@ -52,7 +52,7 @@ uint8_t brakeLights_handler(void)
 {
 	if(brakeLightMode == BRAKE_LIGHT_AUTOMATIC)
 	{
-		uint8_t joystickPercent = adc_readJoystick_percent();
+		uint8_t joystickPercent = adc_getLatestJoystick_percent();
 
 		//brake light control logic
 		//JTS2doNow: When brake pressed, gpio_getBrakePosition_bool() alternates between "Lights ON" & "Lights OFF"
