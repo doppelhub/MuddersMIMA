@@ -17,18 +17,6 @@ void mode_OEM(void)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-//PHEV mode
-//JTS2doNow: implement manual regen
-void mode_INWORK_manualRegen_autoAssist(void)
-{
-	brakeLights_setControlMode(BRAKE_LIGHT_OEM);
-
-	if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE, JOYSTICK_NEUTRAL_NOM_PERCENT); } //ignore regen request
-	else /* (ECM not requesting regen) */                { mcm_passUnmodifiedSignals_fromECM(); } //pass all other signals through
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
 //LiControl completely ignores ECM signals (including autostop, autostart, prestart, etc)
 void mode_manualAssistRegen_ignoreECM(void)
 {
@@ -119,6 +107,18 @@ void mode_manualAssistRegen_withAutoStartStop(void)
 	}
 
 	//JTS2doLater: New feature: When the key is on and the engine is off, pushing momentary button starts engine.
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+//PHEV mode
+//JTS2doNow: implement manual regen
+void mode_INWORK_blendAssist_joystickRegen(void)
+{
+	brakeLights_setControlMode(BRAKE_LIGHT_OEM);
+
+	if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE, JOYSTICK_NEUTRAL_NOM_PERCENT); } //ignore regen request
+	else /* (ECM not requesting regen) */                { mcm_passUnmodifiedSignals_fromECM(); } //pass all other signals through
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
