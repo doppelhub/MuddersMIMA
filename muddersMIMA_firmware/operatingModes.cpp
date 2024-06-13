@@ -223,7 +223,31 @@ void mode_INWORK_PHEV_mudder(void)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+//Pedal Controlled Proportional Assist.
+//Provides assist by adding demand on top of the OEM IMA strategy
+//Uses the OEM regen strategy
+//Fully automatic operation (No joystick required)
 
+void mode_proportional_auto_assist(void)
+{
+	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
+	uint8_t ECM_CMDPWR_percent = ecm_getCMDPWR_percent();
+	uint8_t latestVehicleMPH = engineSignals_getLatestVehicleMPH();
+	uint8_t TPS_percent = adc_getECM_TPS_percent()-9; //TPS offset
+
+		if 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST) 	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, (ECM_CMDPWR_percent+(.02*latestVehicleMPH*TPS_percent ))); } 		
+			// circa 10kW assist under gentle acceleration (full assist with larger throttle openings)
+		else if	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE)   	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, (ECM_CMDPWR_percent+(.045*latestVehicleMPH*TPS_percent ))); }
+			// provides assist during cruise. (circa 6kW highway speeds)
+		else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) &&  (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_OFF)) 	{ mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, (ECM_CMDPWR_percent+(.05*latestVehicleMPH))); }
+			// slight reduction in lift-off regen to make smoother (compensates for increase in power levels due to voltage spoofing).
+		else if	(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)  	{ mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, (ECM_CMDPWR_percent-(.25*latestVehicleMPH))); }
+			// increases brake regen to mask 3rd gear glitch & provide full regen under braking in all gears.
+		else /* (ECM requesting everyting else) */                		{ mcm_passUnmodifiedSignals_fromECM(); } 				
+		    // recommended that background regen (part throttle & forced) are be disabled in LIBCM config (REDUCE_BACKGROUND_REGEN_UNLESS_BRAKING)
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
 void operatingModes_handler(void)
 {
 	uint8_t toggleState = gpio_getButton_toggle();
