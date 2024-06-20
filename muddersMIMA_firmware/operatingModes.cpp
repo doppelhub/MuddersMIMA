@@ -234,10 +234,10 @@ void mode_proportional_auto_assist(void)
 	uint8_t ECM_CMDPWR_percent = ecm_getCMDPWR_percent();
 	uint8_t latestVehicleMPH = engineSignals_getLatestVehicleMPH();
 	uint8_t TPS_percent = adc_getECM_TPS_percent()-9; //TPS offset
-
-		if 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST) 	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, ((.96*ECM_CMDPWR_percent)+(.02*latestVehicleMPH*TPS_percent ))); } 		
+	
+		if 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST) 	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, ((.96*ECM_CMDPWR_percent)+(.15*sqrt(latestVehicleMPH)*TPS_percent ))); } 		
 			// circa 10kW assist under gentle acceleration (full assist with larger throttle openings) (light assisit is reduced to compensate for increase in power levels due to voltage spoofing).
-		else if	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE)   	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, (ECM_CMDPWR_percent+(.045*latestVehicleMPH*TPS_percent ))); }
+		else if	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE)   	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, (ECM_CMDPWR_percent+(.35*sqrt(latestVehicleMPH)*TPS_percent ))); }
 			// provides assist during cruise. (circa 6kW highway speeds)
 		else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) &&  (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_OFF)) 	{ mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, ((1.04*ECM_CMDPWR_percent)); }
 			// slight reduction in lift-off regen to make smoother (compensates for increase in power levels due to voltage spoofing).
