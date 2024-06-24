@@ -39,7 +39,7 @@ ISR(PCINT2_vect)
 
 		uint32_t periodBetweenTicks_us = vssTick_now_us - vssTick_previous_us;
 
-		latestVehicleMPH = ONE_HOUR_IN_MICROSECONDS / periodBetweenTicks_us / 4250;
+		latestVehicleMPH = (ONE_HOUR_IN_MICROSECONDS / NUM_VSS_PULSES_PER_MILE) / periodBetweenTicks_us;
 
 		vssTick_previous_us = vssTick_now_us;
 	}
