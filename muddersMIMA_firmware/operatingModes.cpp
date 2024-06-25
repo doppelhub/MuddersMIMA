@@ -237,18 +237,11 @@ void mode_proportional_auto_assist(void)
 	uint8_t TPS_percent = adc_getECM_TPS_percent()-9; //TPS offset
 	uint8_t latestVehicleRPM = engineSignals_getLatestRPM();
 	
-	uint8_t Assist=.96; 	// light assist is reduced to compensate for increase in power levels due to voltage spoofing.
-	uint8_t Boost=.15; 	// circa 10kW assist under gentle acceleration (full assist with larger throttle openings) 
-	uint8_t Cruise=.35; 	// provides assist during cruise. (circa 6kW highway speeds)
-	uint8_t Coast=1.04; 	// slight reduction in lift-off regen to make smoother (compensates for increase in power levels due to voltage spoofing).
-	uint8_t Brake=.25;  	// increases brake regen to mask 3rd gear glitch & provide full regen under braking in all gears
-				// recommended that background regen (part throttle & forced) are be disabled in LIBCM config (REDUCE_BACKGROUND_REGEN_UNLESS_BRAKING)
-
-		if 	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST) 	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, ((Assist*ECM_CMDPWR_percent)+(Boost*sqrt(latestVehicleMPH)*TPS_percent ))); } 		
-		else if	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE)   	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, (ECM_CMDPWR_percent+(Cruise*sqrt(latestVehicleMPH)*TPS_percent ))); }
-		else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) &&  (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_OFF)) 	{ mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, (Coast*ECM_CMDPWR_percent)); }
-		else if	(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)  	{ mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, (ECM_CMDPWR_percent-(Brake*latestVehicleMPH))); } //TODO: disable this below ~1200rpm
-		else /* (ECM requesting everyting else) */                	{ mcm_passUnmodifiedSignals_fromECM(); } 				
+	if 	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST) 	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, ((Assist*ECM_CMDPWR_percent)+(Boost*sqrt(latestVehicleMPH)*TPS_percent ))); } 		
+	else if	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE)   	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, (ECM_CMDPWR_percent+(Cruise*sqrt(latestVehicleMPH)*TPS_percent ))); }
+	else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) &&  (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_OFF)) 	{ mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, (Coast*ECM_CMDPWR_percent)); }
+	else if	(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)  	{ mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, (ECM_CMDPWR_percent-(Brake*latestVehicleMPH))); } //TODO: disable this below ~1200rpm
+	else /* (ECM requesting everyting else) */                	{ mcm_passUnmodifiedSignals_fromECM(); } 				
 
 }
 
