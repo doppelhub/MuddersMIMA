@@ -143,23 +143,21 @@ void mode_INWORK_PHEV_mudder(void)
 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE  ) ||
 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)  )
 	{
-		//ECM is sending assist, idle, or regen signal
-
 		uint8_t joystick_percent = adc_getLatestJoystick_percent();
 		uint8_t ECM_CMDPWR_percent = ecm_getCMDPWR_percent();
 
-		if (ECM_CMDPWR_percent > joystick_percent) { joystick_percent = ECM_CMDPWR_percent; } //choose strongest assist request (user or ECM)
+		//choose strongest assist request (user or ECM)
+		if (ECM_CMDPWR_percent > joystick_percent) { joystick_percent = ECM_CMDPWR_percent; }
 
+		//store joystick value when user presses momentary button
 		if(gpio_getButton_momentary() == BUTTON_PRESSED)
 		{
-			//store joystick value when button is pressed
 			joystick_percent_stored = joystick_percent;
 			useStoredJoystickValue = YES;
 		}
 
-		//disable stored joystick value if user is braking
-		//JTS2doLater: Add clutch disable
-		if(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)
+		//clear stored joystick value when user presses brake pedal
+		if(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON) //JTS2doLater: Add clutch disable
 		{
 			useStoredJoystickValue = NO;
 			joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;	
