@@ -223,7 +223,32 @@ void mode_INWORK_PHEV_mudder(void)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+//Pedal Controlled Proportional Assist.
+//Provides assist by adding demand on top of the OEM IMA strategy
+//Uses the OEM regen strategy
+//Fully automatic operation (No joystick required)
 
+void mode_proportional_auto_assist(void)
+void mode_proportional_auto_assist(void)
+{
+	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
+	uint8_t ECM_CMDPWR_percent = ecm_getCMDPWR_percent();
+	uint8_t latestVehicleMPH = engineSignals_getLatestVehicleMPH();
+	uint8_t TPS_percent = adc_getECM_TPS_percent()-tpsoffset; 
+	uint8_t latestVehicleRPM = engineSignals_getLatestRPM();
+
+	if (latestVehicleMPH > maxmph) {latestVehicleMPH = 1;}  //safeguard
+	
+	if 	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST) 	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, ((ECM_CMDPWR_percent*Assist/100)+(sqrt(latestVehicleMPH)*TPS_percent*Boost/100))); } 		
+	else if	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE)   	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, (ECM_CMDPWR_percent+(sqrt(latestVehicleMPH)*TPS_percent*Cruise/100))); }
+	else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) &&
+		(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_OFF)) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, (ECM_CMDPWR_percent*Coast/100)); }
+	else if	(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)  	{ mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, ((ECM_CMDPWR_percent*Coast/100)-((latestVehicleMPH*Brake)/100))); }
+	else /* (ECM requesting everyting else) */                	{ mcm_passUnmodifiedSignals_fromECM(); } 				
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
 void operatingModes_handler(void)
 {
 	uint8_t toggleState = gpio_getButton_toggle();
