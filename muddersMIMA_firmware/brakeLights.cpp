@@ -48,6 +48,7 @@ void unlatchSignal_BRAKE_uC(void)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
+//JTS2doLater: For safety, prevent assist latching after each keyON until both brake states are detected
 uint8_t brakeLights_handler(void)
 {
 	if(brakeLightMode == BRAKE_LIGHT_AUTOMATIC)
