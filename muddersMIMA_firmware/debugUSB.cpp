@@ -47,7 +47,7 @@ void debugUSB_printButtonStates(void)
 	}
 
 	Serial.print(F(", Joystick: "));
-	Serial.print(adc_readJoystick_percent(),DEC);
+	Serial.print(adc_getLatestJoystick_percent(),DEC);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
