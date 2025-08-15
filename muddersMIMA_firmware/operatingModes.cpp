@@ -7,14 +7,6 @@
 uint8_t joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;
 bool useStoredJoystickValue = NO; //JTS2doLater: I'm not convinced this is required
 
-// Variables to track clutch state, release time, and ramp up
-bool clutchPressed = false;
-uint32_t clutchReleaseTime = 0;
-bool rampingUp = false;
-uint32_t rampStartTime = 0;
-bool derating = false;
-uint32_t derateStartTime = 0;
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 void mode_OEM(void)
@@ -25,24 +17,12 @@ void mode_OEM(void)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-//PHEV mode
-//JTS2doNow: implement manual regen
-void mode_INWORK_manualRegen_autoAssist(void)
-{
-	brakeLights_setControlMode(BRAKE_LIGHT_OEM);
-
-	if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE, JOYSTICK_NEUTRAL_NOM_PERCENT); } //ignore regen request
-	else /* (ECM not requesting regen) */                { mcm_passUnmodifiedSignals_fromECM(); } //pass all other signals through
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
 //LiControl completely ignores ECM signals (including autostop, autostart, prestart, etc)
 void mode_manualAssistRegen_ignoreECM(void)
 {
 	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 
-	uint16_t joystick_percent = adc_readJoystick_percent();
+	uint16_t joystick_percent = adc_getLatestJoystick_percent();
 
 	if     (joystick_percent < JOYSTICK_MIN_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too low
 	else if(joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN,  joystick_percent);             } //manual regen
@@ -64,7 +44,7 @@ void mode_manualAssistRegen_withAutoStartStop(void)
 		//ECM is sending assist, idle, or regen signal...
 		//but we're in manual mode, so use joystick value instead (either previously stored or value right now)
 
-		uint16_t joystick_percent = adc_readJoystick_percent();
+		uint16_t joystick_percent = adc_getLatestJoystick_percent();
 
 		if(gpio_getButton_momentary() == BUTTON_PRESSED)
 		{
@@ -131,6 +111,18 @@ void mode_manualAssistRegen_withAutoStartStop(void)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+//PHEV mode
+//JTS2doNow: implement manual regen
+void mode_INWORK_blendAssist_joystickRegen(void)
+{
+	brakeLights_setControlMode(BRAKE_LIGHT_OEM);
+
+	if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE, JOYSTICK_NEUTRAL_NOM_PERCENT); } //ignore regen request
+	else /* (ECM not requesting regen) */                { mcm_passUnmodifiedSignals_fromECM(); } //pass all other signals through
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 //GOAL: All OEM signals are passed through unmodified, except:
 //CMDPWR assist
 	//LiControl uses strongest assist request (user or ECM), except that;
@@ -151,23 +143,21 @@ void mode_INWORK_PHEV_mudder(void)
 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE  ) ||
 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)  )
 	{
-		//ECM is sending assist, idle, or regen signal
-
-		uint8_t joystick_percent = adc_readJoystick_percent();
+		uint8_t joystick_percent = adc_getLatestJoystick_percent();
 		uint8_t ECM_CMDPWR_percent = ecm_getCMDPWR_percent();
 
-		if (ECM_CMDPWR_percent > joystick_percent) { joystick_percent = ECM_CMDPWR_percent; } //choose strongest assist request (user or ECM)
+		//choose strongest assist request (user or ECM)
+		if (ECM_CMDPWR_percent > joystick_percent) { joystick_percent = ECM_CMDPWR_percent; }
 
+		//store joystick value when user presses momentary button
 		if(gpio_getButton_momentary() == BUTTON_PRESSED)
 		{
-			//store joystick value when button is pressed
 			joystick_percent_stored = joystick_percent;
 			useStoredJoystickValue = YES;
 		}
 
-		//disable stored joystick value if user is braking
-		//JTS2doLater: Add clutch disable
-		if(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)
+		//clear stored joystick value when user presses brake pedal
+		if(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON) //JTS2doLater: Add clutch disable
 		{
 			useStoredJoystickValue = NO;
 			joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;	
@@ -230,122 +220,69 @@ void mode_INWORK_PHEV_mudder(void)
 	//JTS2doLater: New feature: When the key is on and the engine is off, pushing momentary button starts engine.
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-//Heavily based on Mudders code above. Added a max RPM to prevent redline, derating logic under 2k RPM and ramp-up logic to smoothly transition between states. 
-void mode_INWORK_PHEV_AfterEffect(void)
+void mode_blendedECM_withManualOverride(void)
 {
-    brakeLights_setControlMode(BRAKE_LIGHT_MONITOR_ONLY);
+    brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 
-    // Check if ECM is sending assist, idle, or regen signal
     if( (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN ) ||
         (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE  ) ||
         (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)  )
     {
-        uint8_t joystick_percent = adc_readJoystick_percent();
+        // ECM is sending assist, idle, or regen signal - check for manual override
+        
+        uint8_t joystick_percent = adc_getLatestJoystick_percent();
         uint8_t ECM_CMDPWR_percent = ecm_getCMDPWR_percent();
-
-        // Prioritize ECM command over joystick if stronger
-        if (ECM_CMDPWR_percent > joystick_percent) { 
-            joystick_percent = ECM_CMDPWR_percent; 
+        uint8_t ecm_state = ecm_getMAMODE1_state();
+        
+        // Determine what to command based on joystick vs ECM
+        uint8_t final_CMDPWR_percent;
+        uint8_t final_state;
+        
+        // Check for manual regen override (joystick < 50% = regen request)
+        if (joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) {
+            // Manual regen requested - always override ECM
+            final_CMDPWR_percent = joystick_percent;
+            final_state = MAMODE1_STATE_IS_REGEN;
         }
-
-        // Handle clutch interaction
-        if (gpio_getClutchPosition() == CLUTCH_PEDAL_PRESSED)
-        {
-            clutchPressed = true;
-            clutchReleaseTime = millis();
-        }
-        else if (clutchPressed && (millis() - clutchReleaseTime > CLUTCH_DELAY))
-        {
-            clutchPressed = false;
-        }
-
-        // Disable assist if clutch is pressed
-        if (clutchPressed)
-        {
-            joystick_percent = JOYSTICK_NEUTRAL_NOM_PERCENT; // No assist when clutch is pressed
-        }
-
-        // Handle maximum RPM logic
-        uint16_t currentRPM = engineSignals_getLatestRPM();
-
-        if (currentRPM >= MAX_RPM)
-        {
-            joystick_percent = JOYSTICK_NEUTRAL_NOM_PERCENT; // Disable assist at max RPM
-        }
-        else if (currentRPM < (DERATE_UNDER_RPM - 100))
-        {
-            // Remap only the assist range to DERATE_PERCENT, keep neutral and regen ranges intact
-            if (joystick_percent > JOYSTICK_NEUTRAL_MAX_PERCENT)
-            {
-                joystick_percent = map(joystick_percent, JOYSTICK_NEUTRAL_MAX_PERCENT, 100, JOYSTICK_NEUTRAL_MAX_PERCENT, DERATE_PERCENT);
-            }
-        } 
-        else if (currentRPM < DERATE_UNDER_RPM) 
-        {
-            // Scale DERATE_PERCENT from its value to 100% as currentRPM approaches DERATE_UNDER_RPM
-            int scaledPercent = map(currentRPM, DERATE_UNDER_RPM - 100, DERATE_UNDER_RPM, DERATE_PERCENT, 100);
-            if (joystick_percent > JOYSTICK_NEUTRAL_MAX_PERCENT)
-            {
-                joystick_percent = map(joystick_percent, JOYSTICK_NEUTRAL_MAX_PERCENT, 100, JOYSTICK_NEUTRAL_MAX_PERCENT, scaledPercent);
+        // Check for manual assist override (joystick > ECM assist)
+        else if (joystick_percent > JOYSTICK_NEUTRAL_MAX_PERCENT) {
+            // Manual assist requested - use stronger of joystick or ECM
+            if (ecm_state == MAMODE1_STATE_IS_ASSIST) {
+                // ECM is also requesting assist - use the stronger request
+                final_CMDPWR_percent = (joystick_percent > ECM_CMDPWR_percent) ? joystick_percent : ECM_CMDPWR_percent;
+                final_state = MAMODE1_STATE_IS_ASSIST;
+            } else {
+                // ECM not requesting assist, but joystick is - use joystick
+                final_CMDPWR_percent = joystick_percent;
+                final_state = MAMODE1_STATE_IS_ASSIST;
             }
         }
-
-        // Use ECM regen request when the user is braking and joystick is neutral
-        if ((joystick_percent > JOYSTICK_NEUTRAL_MIN_PERCENT)     && // Joystick is neutral
-            (joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT)     && // Joystick is neutral
-            (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)  ) // User is braking
-        {
-            // Replace neutral joystick position with ECM regen request while braking
-            joystick_percent = ecm_getCMDPWR_percent();
+        // Joystick in neutral zone - use ECM signals
+        else {
+            final_CMDPWR_percent = ECM_CMDPWR_percent;
+            final_state = ecm_state;
         }
-
-        // Send assist/idle/regen value to MCM based on either braking or joystick position
-        if ((joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) || (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)) 
-        {
-            // If the joystick is below neutral (regen) OR the brake is pressed, send regen signal
-            mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, joystick_percent);
-        }
-        else if (joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT)
-        {
-            // If joystick is in neutral range and brake is not pressed, go to idle
-            mcm_setAllSignals(MAMODE1_STATE_IS_IDLE, joystick_percent);
-        }
-        else if (joystick_percent < JOYSTICK_MAX_ALLOWED_PERCENT)
-        {
-            // If joystick is above neutral, send assist signal
-            mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, joystick_percent);
-        }
-        else
-        {
-            // Invalid signal (joystick percent too high), fallback to idle
-            mcm_setAllSignals(MAMODE1_STATE_IS_IDLE, JOYSTICK_NEUTRAL_NOM_PERCENT);
-        }
+        
+        // Command the final values
+        mcm_setAllSignals(final_state, final_CMDPWR_percent);
     }
-    else if (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_PRESTART)
+    else if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_PRESTART)
     {
-        // Handle prestart logic
-        if (millis() < (time_latestKeyOn_ms() + PERIOD_AFTER_KEYON_WHERE_PRESTART_ALLOWED_ms)) { 
+        // Handle prestart like the manual modes do
+        if(millis() < (time_latestKeyOn_ms() + PERIOD_AFTER_KEYON_WHERE_PRESTART_ALLOWED_ms)) { 
             mcm_passUnmodifiedSignals_fromECM(); 
         } else { 
             mcm_setAllSignals(MAMODE1_STATE_IS_AUTOSTOP, JOYSTICK_NEUTRAL_NOM_PERCENT); 
         }
-
-        // Clear stored joystick value
-        joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;
-        useStoredJoystickValue = NO;
     }
-    else
+    else //ECM is sending autostop, start, or undefined signal
     {
-        // Pass through other signals unmodified
+        // Pass these signals through unmodified
         mcm_passUnmodifiedSignals_fromECM();
-
-        // Clear stored joystick value
-        joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;
-        useStoredJoystickValue = NO;
     }
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////
 
 void operatingModes_handler(void)
 {

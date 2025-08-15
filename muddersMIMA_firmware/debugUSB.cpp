@@ -47,7 +47,7 @@ void debugUSB_printButtonStates(void)
 	}
 
 	Serial.print(F(", Joystick: "));
-	Serial.print(adc_readJoystick_percent(),DEC);
+	Serial.print(adc_getLatestJoystick_percent(),DEC);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -96,6 +96,9 @@ void debugUSB_printOEMsignals(void)
 
 	Serial.print(F(" RPM:"));
 	Serial.print( engineSignals_getLatestRPM() );
+
+  Serial.print(F(" MPH:"));
+	Serial.print( engineSignals_getLatestVehicleMPH() );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
