@@ -22,8 +22,10 @@ void setup()
 {
 	gpio_begin();
 	engineSignals_begin();
+	spiToLiBCM_begin();  // Initialize SPI communication with LiBCM
 	Serial.begin(115200); //USB
 	Serial.print(F("\n\nWelcome to LiControl v" FW_VERSION ", " BUILD_DATE "\nType '$HELP' for more info\n"));
+	Serial.print(F("SPI communication with LiBCM enabled\n"));
 }
 
 void loop()
@@ -34,6 +36,7 @@ void loop()
 	brakeLights_handler();
 	operatingModes_handler();
 	USB_userInterface_handler();
+	spiToLiBCM_handler();
 
 	debugUSB_printLatestData();
 

@@ -37,6 +37,21 @@ void measureJoystick_percent(void)
 		helper_percent = 100 - helper_percent;
 	#endif
 
+	#ifdef SLIDER_IS_INSTALLED
+		// Apply the scaling and offset adjustment when the slider is installed
+		// Adjusts output for sliders that output 20-84% range rather than 5-95%
+		float scaled_percent = 1.26 * helper_percent - 13.5;
+		
+		// Ensure the result stays within valid bounds
+		if (scaled_percent < 0) {
+			helper_percent = 0;
+		} else if (scaled_percent > 100) {
+			helper_percent = 100;
+		} else {
+			helper_percent = (uint8_t)scaled_percent;
+		}
+	#endif
+
 	joystick_percent = helper_percent;
 }
 

@@ -220,6 +220,68 @@ void mode_INWORK_PHEV_mudder(void)
 	//JTS2doLater: New feature: When the key is on and the engine is off, pushing momentary button starts engine.
 }
 
+void mode_blendedECM_withManualOverride(void)
+{
+    brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
+
+    if( (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN ) ||
+        (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE  ) ||
+        (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)  )
+    {
+        // ECM is sending assist, idle, or regen signal - check for manual override
+        
+        uint8_t joystick_percent = adc_getLatestJoystick_percent();
+        uint8_t ECM_CMDPWR_percent = ecm_getCMDPWR_percent();
+        uint8_t ecm_state = ecm_getMAMODE1_state();
+        
+        // Determine what to command based on joystick vs ECM
+        uint8_t final_CMDPWR_percent;
+        uint8_t final_state;
+        
+        // Check for manual regen override (joystick < 50% = regen request)
+        if (joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) {
+            // Manual regen requested - always override ECM
+            final_CMDPWR_percent = joystick_percent;
+            final_state = MAMODE1_STATE_IS_REGEN;
+        }
+        // Check for manual assist override (joystick > ECM assist)
+        else if (joystick_percent > JOYSTICK_NEUTRAL_MAX_PERCENT) {
+            // Manual assist requested - use stronger of joystick or ECM
+            if (ecm_state == MAMODE1_STATE_IS_ASSIST) {
+                // ECM is also requesting assist - use the stronger request
+                final_CMDPWR_percent = (joystick_percent > ECM_CMDPWR_percent) ? joystick_percent : ECM_CMDPWR_percent;
+                final_state = MAMODE1_STATE_IS_ASSIST;
+            } else {
+                // ECM not requesting assist, but joystick is - use joystick
+                final_CMDPWR_percent = joystick_percent;
+                final_state = MAMODE1_STATE_IS_ASSIST;
+            }
+        }
+        // Joystick in neutral zone - use ECM signals
+        else {
+            final_CMDPWR_percent = ECM_CMDPWR_percent;
+            final_state = ecm_state;
+        }
+        
+        // Command the final values
+        mcm_setAllSignals(final_state, final_CMDPWR_percent);
+    }
+    else if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_PRESTART)
+    {
+        // Handle prestart like the manual modes do
+        if(millis() < (time_latestKeyOn_ms() + PERIOD_AFTER_KEYON_WHERE_PRESTART_ALLOWED_ms)) { 
+            mcm_passUnmodifiedSignals_fromECM(); 
+        } else { 
+            mcm_setAllSignals(MAMODE1_STATE_IS_AUTOSTOP, JOYSTICK_NEUTRAL_NOM_PERCENT); 
+        }
+    }
+    else //ECM is sending autostop, start, or undefined signal
+    {
+        // Pass these signals through unmodified
+        mcm_passUnmodifiedSignals_fromECM();
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 void operatingModes_handler(void)
