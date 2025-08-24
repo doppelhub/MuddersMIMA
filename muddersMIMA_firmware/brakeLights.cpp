@@ -33,7 +33,7 @@ void pulseBrakeLights(void)
 void unlatchSignal_BRAKE_uC(void)
 {
 	//LiControl's high-side driver remains latched on after user removes foot from brake pedal
-	//thus, the brake lights will stay on unless we briefly force the high-side driver off 
+	//thus, the brake lights will stay on unless we briefly force the high-side driver off
 	if (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)
 	{
 		//either the brake pedal is pressed or the high-side driver is latched (we don't know)
@@ -41,9 +41,12 @@ void unlatchSignal_BRAKE_uC(void)
 		delayMicroseconds(100); //if brake released, BRAKE_RAW discharges to ground in 75 us
 		//if brake pedal released, BRAKE_uC is now low (~0.7 volts due to diode drop)
 		//if brake pedal pressed,  BRAKE_uC takes 200 us to pullup to 4V ~= Vih(min)
+        gpio_brakeLights_floatPin();
+        delayMicroseconds(200); // make sure that if brake pedal pressed, we will see it at the next gpio_getBrakePosition_bool()
 	}
-	
-	gpio_brakeLights_floatPin(); //allows LiControl to check brake status
+    else {
+    	gpio_brakeLights_floatPin(); //allows LiControl to check brake status
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -57,7 +60,7 @@ uint8_t brakeLights_handler(void)
 
 		//brake light control logic
 		//JTS2doNow: When brake pressed, gpio_getBrakePosition_bool() alternates between "Lights ON" & "Lights OFF"
-		if     (joystickPercent < JOYSTICK_MIN_ALLOWED_PERCENT)                { gpio_brakeLights_turnOff(); } //joystick input too low	
+		if     (joystickPercent < JOYSTICK_MIN_ALLOWED_PERCENT)                { gpio_brakeLights_turnOff(); } //joystick input too low
 		else if(joystickPercent < TURN_BRAKE_LIGHTS_ON_BELOW_JOYSTICK_PERCENT) { gpio_brakeLights_turnOn();  } //strong regen //JTS2doNow: Add hysteresis
 		else                                                                   { unlatchSignal_BRAKE_uC();   }
 	}
