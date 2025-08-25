@@ -39,9 +39,9 @@ void unlatchSignal_BRAKE_uC(void)
 		//either the brake pedal is pressed or the high-side driver is latched (we don't know)
 		gpio_brakeLights_turnOff(); //if brake released, pulling BRAKE_uC low turns high-side driver off
 		delayMicroseconds(100); //if brake released, BRAKE_RAW discharges to ground in 75 us
+        gpio_brakeLights_floatPin();
 		//if brake pedal released, BRAKE_uC is now low (~0.7 volts due to diode drop)
 		//if brake pedal pressed,  BRAKE_uC takes 200 us to pullup to 4V ~= Vih(min)
-        gpio_brakeLights_floatPin();
         delayMicroseconds(200); // make sure that if brake pedal pressed, we will see it at the next gpio_getBrakePosition_bool()
 	}
     else {
