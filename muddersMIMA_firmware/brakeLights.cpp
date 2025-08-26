@@ -32,18 +32,21 @@ void pulseBrakeLights(void)
 
 void unlatchSignal_BRAKE_uC(void)
 {
-	//LiControl's high-side driver remains latched on after user removes foot from brake pedal
-	//thus, the brake lights will stay on unless we briefly force the high-side driver off 
+	//LiControl's high-side brake light driver remains latched on after brake lights are turned on
+    //  by the operator pressing the brakes, or by gpio_brakeLights_turnOn(void)
+	//thus, the brake lights will stay on unless we briefly force the high-side driver off
 	if (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)
 	{
 		//either the brake pedal is pressed or the high-side driver is latched (we don't know)
-		gpio_brakeLights_turnOff(); //if brake released, pulling BRAKE_uC low turns high-side driver off
-		delayMicroseconds(100); //if brake released, BRAKE_RAW discharges to ground in 75 us
-		//if brake pedal released, BRAKE_uC is now low (~0.7 volts due to diode drop)
-		//if brake pedal pressed,  BRAKE_uC takes 200 us to pullup to 4V ~= Vih(min)
-	}
-	
-	gpio_brakeLights_floatPin(); //allows LiControl to check brake status
+		gpio_brakeLights_turnOff(); //pulling BRAKE_uC low turns high-side driver off
+		//at this point BRAKE_uC should now be low
+		delayMicroseconds(100); //if the operator is not applying brakes, BRAKE_RAW discharges to ground in 75 us
+    }
+    gpio_brakeLights_floatPin(); //allows LiControl to check brake status
+    //if brake peddle is NOT pressed, BRAKE_RAW will be ~0V, and BRAKE_uC will remain low (~0.7 volts due to diode drop)
+    //but if brake pedal IS pressed, BRAKE_RAW will be ~12V, and BRAKE_uC takes 200 us to pullup to 4V ~= Vih(min),
+    //  in which case we need a delay to make sure we will see it high at the next gpio_getBrakePosition_bool()
+    delayMicroseconds(200);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -57,7 +60,7 @@ uint8_t brakeLights_handler(void)
 
 		//brake light control logic
 		//JTS2doNow: When brake pressed, gpio_getBrakePosition_bool() alternates between "Lights ON" & "Lights OFF"
-		if     (joystickPercent < JOYSTICK_MIN_ALLOWED_PERCENT)                { gpio_brakeLights_turnOff(); } //joystick input too low	
+		if     (joystickPercent < JOYSTICK_MIN_ALLOWED_PERCENT)                { gpio_brakeLights_turnOff(); } //joystick input too low
 		else if(joystickPercent < TURN_BRAKE_LIGHTS_ON_BELOW_JOYSTICK_PERCENT) { gpio_brakeLights_turnOn();  } //strong regen //JTS2doNow: Add hysteresis
 		else                                                                   { unlatchSignal_BRAKE_uC();   }
 	}
