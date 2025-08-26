@@ -32,21 +32,21 @@ void pulseBrakeLights(void)
 
 void unlatchSignal_BRAKE_uC(void)
 {
-	//LiControl's high-side driver remains latched on after user removes foot from brake pedal
+	//LiControl's high-side brake light driver remains latched on after brake lights are turned on
+    //  by the operator pressing the brakes, or by gpio_brakeLights_turnOn(void)
 	//thus, the brake lights will stay on unless we briefly force the high-side driver off
 	if (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)
 	{
 		//either the brake pedal is pressed or the high-side driver is latched (we don't know)
-		gpio_brakeLights_turnOff(); //if brake released, pulling BRAKE_uC low turns high-side driver off
-		delayMicroseconds(100); //if brake released, BRAKE_RAW discharges to ground in 75 us
-        gpio_brakeLights_floatPin();
-		//if brake pedal released, BRAKE_uC is now low (~0.7 volts due to diode drop)
-		//if brake pedal pressed,  BRAKE_uC takes 200 us to pullup to 4V ~= Vih(min)
-        delayMicroseconds(200); // make sure that if brake pedal pressed, we will see it at the next gpio_getBrakePosition_bool()
-	}
-    else {
-    	gpio_brakeLights_floatPin(); //allows LiControl to check brake status
+		gpio_brakeLights_turnOff(); //pulling BRAKE_uC low turns high-side driver off
+		//at this point BRAKE_uC should now be low
+		delayMicroseconds(100); //if the operator is not applying brakes, BRAKE_RAW discharges to ground in 75 us
     }
+    gpio_brakeLights_floatPin(); //allows LiControl to check brake status
+    //if brake peddle is NOT pressed, BRAKE_RAW will be ~0V, and BRAKE_uC will remain low (~0.7 volts due to diode drop)
+    //but if brake pedal IS pressed, BRAKE_RAW will be ~12V, and BRAKE_uC takes 200 us to pullup to 4V ~= Vih(min),
+    //  in which case we need a delay to make sure we will see it high at the next gpio_getBrakePosition_bool()
+    delayMicroseconds(200);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
