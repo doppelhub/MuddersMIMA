@@ -35,14 +35,13 @@ void mode_manualAssistRegen_ignoreECM(void)
 
 void mode_manualAssistRegen_withAutoStartStop(void)
 {
-	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 
 	if( (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN ) ||
 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE  ) ||
 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)  )
 	{
 		//ECM is sending assist, idle, or regen signal...
-		//but we're in manual mode, so use joystick value instead (either previously stored or value right now)
+		//but we're in blended manual mode, so combine its signal cleverly with the joystick (either previously stored or value right now)
 
 		uint16_t joystick_percent = adc_getLatestJoystick_percent();
 
@@ -63,11 +62,36 @@ void mode_manualAssistRegen_withAutoStartStop(void)
 
 		//use stored joystick value if conditions are right
 		if( (useStoredJoystickValue == YES                ) && //user previously pushed button
-			(joystick_percent > JOYSTICK_NEUTRAL_MIN_PERCENT) && //joystick is neutral
-			(joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT)  ) //joystick is neutral
+			( ( (joystick_percent > JOYSTICK_NEUTRAL_MIN_PERCENT) && //joystick is neutral, or
+			    (joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT)
+              ) ||
+              ( (joystick_percent < joystick_percent_stored) && //joystick is less than stored value if assist, or
+                (joystick_percent > JOYSTICK_NEUTRAL_MAX_PERCENT)
+              ) ||
+              ( (joystick_percent > joystick_percent_stored) && //joystick is more than stored value if regen
+                (joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) ) ) )
 		{
 			//replace actual joystick position with previously stored value
 			joystick_percent = joystick_percent_stored;
+		}
+
+		uint16_t ecm_cmdpwr_percent = ecm_getCMDPWR_percent();
+
+		//use the ECM-commanded assist if conditions are right
+		if( ( ( (joystick_percent > JOYSTICK_NEUTRAL_MIN_PERCENT) && //joystick is neutral, and not due to a stored neutral, or
+			    (joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT)
+              ) ||
+              ( (joystick_percent < ecm_cmdpwr_percent) && //joystick is less than commanded value if assist, or
+                (joystick_percent > JOYSTICK_NEUTRAL_MAX_PERCENT)
+              ) ||
+              ( (joystick_percent > ecm_cmdpwr_percent) && //joystick is more than commanded value if regen
+                (joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) ) ) )
+		{
+			//replace actual joystick position with the ECM's CMDPWR value
+			joystick_percent = ecm_cmdpwr_percent;
+			brakeLights_setControlMode(BRAKE_LIGHT_OEM);
+		} else {
+			brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 		}
 		
 		//send assist/idle/regen value to MCM
@@ -80,6 +104,7 @@ void mode_manualAssistRegen_withAutoStartStop(void)
 	}
 	else if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_PRESTART)
 	{
+		brakeLights_setControlMode(BRAKE_LIGHT_OEM);
 		//prevent DCDC disable when user regen-stalls car
 
 		//DCDC converter must be disabled when the key first turns on.
@@ -98,6 +123,7 @@ void mode_manualAssistRegen_withAutoStartStop(void)
 	}
 	else //ECM is sending autostop, start, or undefined signal
 	{
+		brakeLights_setControlMode(BRAKE_LIGHT_OEM);
 		//pass these signals through unmodified (so autostop works properly)
 		mcm_passUnmodifiedSignals_fromECM();
 
