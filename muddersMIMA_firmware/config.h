@@ -22,17 +22,20 @@
 		//#define MODE0_BEHAVIOR() mode_manualAssistRegen_withAutoStartStop();
 		//#define MODE0_BEHAVIOR() mode_manualAssistRegen_ignoreECM();
 		//#define MODE0_BEHAVIOR() mode_INWORK_PHEV_mudder();
+		//#define MODE0_BEHAVIOR() mode_proportional_auto_assist();
 
 	//...is in the '1' position
 		//#define MODE1_BEHAVIOR() mode_OEM()
 	  	  #define MODE1_BEHAVIOR() mode_manualAssistRegen_withAutoStartStop();
 		//#define MODE1_BEHAVIOR() mode_manualAssistRegen_ignoreECM();
 		//#define MODE1_BEHAVIOR() mode_INWORK_PHEV_mudder();
+		//#define MODE1_BEHAVIOR() mode_proportional_auto_assist();
 
 	//...is in the '2' position
 		//#define MODE2_BEHAVIOR() mode_OEM()
 		//#define MODE2_BEHAVIOR() mode_manualAssistRegen_withAutoStartStop();
 	  	  #define MODE2_BEHAVIOR() mode_manualAssistRegen_ignoreECM();
 		//#define MODE2_BEHAVIOR() mode_INWORK_PHEV_mudder();
+		//#define MODE2_BEHAVIOR() mode_proportional_auto_assist();
 
 #endif
