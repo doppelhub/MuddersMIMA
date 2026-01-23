@@ -116,8 +116,9 @@ void mode_manualAssistRegen_withAutoStartStop(bool disableJoystick = false)
 
 //GOAL: Make driving the Insight as a Plug-In-Hybrid easier
 //Description:
+//	Pressing the throttle will provide powerful electric assist
 //	Inherits the same functionality as mode_manualAssistRegen_withAutoStartStop (mode_1)
-//	+ pressing the throttle will also provide electric assist
+//		(the joystick still works)
 //USE CASES:
 //	-turning on to a busy road
 // 	-starting on steep hills
@@ -127,8 +128,7 @@ void mode_manualAssistRegen_withAutoStartStop(bool disableJoystick = false)
 //	-small batteries
 void mode_electricThrottle(void)
 {
-	//TODO: add easing curves to translate from TPS_percent -> actual assist percentage
-	//		adjust throttle curves to make the vehicle feel right
+	//DezTODO: add easing curves to change the assist ~feel~ of the car (ease-in / ease-out)
 	bool throttleIsPastThreshold = adc_getLatestThrottle_percent() > MODE_ELECTRICTHROTTLE_TPSRANGE_START;
 
 	if(throttleIsPastThreshold)
@@ -142,11 +142,11 @@ void mode_electricThrottle(void)
 		// to
 		// [ASSIST_MIN, ASSIST_MAX]
 		uint8_t assistAmount = ASSIST_MIN + (adc_getLatestThrottle_percent() - MODE_ELECTRICTHROTTLE_TPSRANGE_START) * (ASSIST_MAX - ASSIST_MIN) / (MODE_ELECTRICTHROTTLE_TPSRANGE_END - MODE_ELECTRICTHROTTLE_TPSRANGE_START);
-		mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, assistAmount);
-		// Serial.println("AssistAmount: " + String(assistAmount));
+		mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, assistAmount); //at this point, assistAmount will be between ASSIST_MIN and ASSIST_MAX
 	}
 	
 	//everything else is handled by mode 1.  The joystick is disabled when throttling
+	//it would be possible to let the higher number take priority, throttle > joystick or vice versa
 	mode_manualAssistRegen_withAutoStartStop(throttleIsPastThreshold);
 }
 

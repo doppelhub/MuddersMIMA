@@ -22,7 +22,7 @@
 
 	//choose behavior when three position switch...
 	//...is in the '0' position
-		  #define MODE0_BEHAVIOR() mode_OEM()
+		#define MODE0_BEHAVIOR() mode_OEM()
 		//#define MODE0_BEHAVIOR() mode_manualAssistRegen_withAutoStartStop();
 		//#define MODE0_BEHAVIOR() mode_manualAssistRegen_ignoreECM();
 		//#define MODE0_BEHAVIOR() mode_INWORK_PHEV_mudder();
