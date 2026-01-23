@@ -7,11 +7,14 @@
 //store frequently accessed ADC measurements in RAM, so they're only read once per loop 
 uint8_t joystick_percent = JOYSTICK_NEUTRAL_NOM_PERCENT;
 //ECM_MAMODE1 & ECM_CMDPWR are handled separately in ecm_signals.c
-//JTS2doLater: add the MAP and/or TPS ADC measurements here if they end up getting called frequently 
+//JTS2doLater: add the MAP and/or TPS ADC measurements here if they end up getting called frequently
+
+uint8_t throttle_percent = 0;
 
 //////////////////////////////////////////////////////////////////////////////////// 
 
 uint8_t adc_getLatestJoystick_percent(void) { return joystick_percent; }
+uint8_t adc_getLatestThrottle_percent(void) { return throttle_percent; }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -38,6 +41,13 @@ void measureJoystick_percent(void)
 	#endif
 
 	joystick_percent = helper_percent;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+void measureThrottle_percent(void)
+{
+	throttle_percent = adc_getECM_TPS_percent();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -86,4 +96,5 @@ uint8_t adc_getECM_TPS_percent(void) { return read10bValue_Percent(PIN_THROTTLE 
 void adc_handler(void)
 {
 	measureJoystick_percent();
+	measureThrottle_percent();
 }

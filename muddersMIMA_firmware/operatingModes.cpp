@@ -33,6 +33,19 @@ void mode_manualAssistRegen_ignoreECM(void)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+//Same functionality as mode_manualAssistRegen_withAutoStartStop, except the throttle (TPS) will provide assist
+//intended to use for short bursts of power using the gas pedal, or short trips, assuming you have a big enough battery
+void mode_manualAssistRegen_TPSAssist
+{
+	//TODO: add easing curves to translate from TPS_percent -> actual assist percentage
+	//		adjust throttle curves to make the vehicle feel right
+	//		note: do this in config.h
+
+	
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 void mode_manualAssistRegen_withAutoStartStop(void)
 {
 	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);

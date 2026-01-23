@@ -8,7 +8,7 @@
 
 #include "muddersMIMA.h"
 
-uint8_t dataTypeToStream = DEBUGUSB_STREAM_BUTTON;
+uint8_t dataTypeToStream = DEBUGUSB_STREAM_OEM_SIGNALS;
 uint32_t dataUpdatePeriod_ms = 250;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
