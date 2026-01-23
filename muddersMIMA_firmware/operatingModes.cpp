@@ -33,20 +33,7 @@ void mode_manualAssistRegen_ignoreECM(void)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-//Same functionality as mode_manualAssistRegen_withAutoStartStop, except the throttle (TPS) will provide assist
-//intended to use for short bursts of power using the gas pedal, or short trips, assuming you have a big enough battery
-void mode_manualAssistRegen_TPSAssist
-{
-	//TODO: add easing curves to translate from TPS_percent -> actual assist percentage
-	//		adjust throttle curves to make the vehicle feel right
-	//		note: do this in config.h
-
-	
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-void mode_manualAssistRegen_withAutoStartStop(void)
+void mode_manualAssistRegen_withAutoStartStop(bool disableJoystick = false)
 {
 	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 
@@ -83,12 +70,15 @@ void mode_manualAssistRegen_withAutoStartStop(void)
 			joystick_percent = joystick_percent_stored;
 		}
 		
-		//send assist/idle/regen value to MCM
-		if     (joystick_percent < JOYSTICK_MIN_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too low
-		else if(joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN,  joystick_percent);             } //manual regen
-		else if(joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   joystick_percent);             } //standby
-		else if(joystick_percent < JOYSTICK_MAX_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, joystick_percent);             } //manual assist
-		else                                                     { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too high
+		if(!disableJoystick)
+		{
+			//send assist/idle/regen value to MCM
+			if     (joystick_percent < JOYSTICK_MIN_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too low
+			else if(joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN,  joystick_percent);             } //manual regen
+			else if(joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   joystick_percent);             } //standby
+			else if(joystick_percent < JOYSTICK_MAX_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, joystick_percent);             } //manual assist
+			else                                                     { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too high
+		}
 
 	}
 	else if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_PRESTART)
@@ -120,6 +110,44 @@ void mode_manualAssistRegen_withAutoStartStop(void)
 	}
 
 	//JTS2doLater: New feature: When the key is on and the engine is off, pushing momentary button starts engine.
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+//GOAL: Make driving the Insight as a Plug-In-Hybrid easier
+//Description:
+//	Inherits the same functionality as mode_manualAssistRegen_withAutoStartStop (mode_1)
+//	+ pressing the throttle will also provide electric assist
+//USE CASES:
+//	-turning on to a busy road
+// 	-starting on steep hills
+// 	-driving your 78hp insight like the little racecar it is
+//WHAT THIS IS NOT USEFUL FOR:
+//	-long trips
+//	-small batteries
+void mode_electricThrottle(void)
+{
+	//TODO: add easing curves to translate from TPS_percent -> actual assist percentage
+	//		adjust throttle curves to make the vehicle feel right
+	bool throttleIsPastThreshold = adc_getLatestThrottle_percent() > MODE_ELECTRICTHROTTLE_TPSRANGE_START;
+
+	if(throttleIsPastThreshold)
+	{
+		#define ASSIST_MIN 50
+		#define ASSIST_MAX 90
+		//Map a value x from range [a, b] into [c, d]:
+		//y = c + (x - a) * (d - c) / (b - a);
+		//Linear Interpolate from
+		// [MODE_ELECTRICTHROTTLE_TPSRANGE_START, MODE_ELECTRICTHROTTLE_TPSRANGE_END]
+		// to
+		// [ASSIST_MIN, ASSIST_MAX]
+		uint8_t assistAmount = ASSIST_MIN + (adc_getLatestThrottle_percent() - MODE_ELECTRICTHROTTLE_TPSRANGE_START) * (ASSIST_MAX - ASSIST_MIN) / (MODE_ELECTRICTHROTTLE_TPSRANGE_END - MODE_ELECTRICTHROTTLE_TPSRANGE_START);
+		mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, assistAmount);
+		// Serial.println("AssistAmount: " + String(assistAmount));
+	}
+	
+	//everything else is handled by mode 1.  The joystick is disabled when throttling
+	mode_manualAssistRegen_withAutoStartStop(throttleIsPastThreshold);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

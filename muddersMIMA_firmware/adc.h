@@ -18,6 +18,8 @@
 
 	uint8_t adc_getLatestJoystick_percent(void);
 
+	uint8_t adc_getLatestThrottle_percent(void);
+
 	uint8_t adc_getECM_CMDPWR_percent(void); //recommendation: call ecm_getCMDPWR_percent() instead
 
 	uint8_t adc_getECM_MAMODE1_percent(void); //recommendation: call ecm_getMAMODE1_state() instead
