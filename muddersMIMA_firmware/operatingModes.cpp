@@ -128,7 +128,6 @@ void mode_manualAssistRegen_withAutoStartStop(bool disableJoystick = false)
 //	-small batteries
 void mode_electricThrottle(void)
 {
-	//DezTODO: add easing curves to change the assist ~feel~ of the car (ease-in / ease-out)
 	bool throttleIsPastThreshold = adc_getLatestThrottle_percent() > MODE_ELECTRICTHROTTLE_TPSRANGE_START;
 
 	if(throttleIsPastThreshold)

@@ -13,7 +13,7 @@ uint16_t utility_sqrt_u16(uint16_t x)
         {
             y -= base; // base should not have been added, so we substract again
         }
-        base >> 1; // shift 1 digit to the right = divide by 2
+        base >>= 1; // shift 1 digit to the right = divide by 2
     }
     				Serial.println(y);
     return y;
