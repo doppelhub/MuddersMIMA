@@ -134,13 +134,13 @@ void mode_electricThrottle(void)
 	{
 		#define ASSIST_MIN 50
 		#define ASSIST_MAX 90
-		// uint8_t assistAmount = ASSIST_MIN + (adc_getLatestThrottle_percent() - MODE_ELECTRICTHROTTLE_TPSRANGE_START) * (ASSIST_MAX - ASSIST_MIN) / (MODE_ELECTRICTHROTTLE_TPSRANGE_END - MODE_ELECTRICTHROTTLE_TPSRANGE_START);
 		
 		//normalize throttle input to [0, 255]
 		uint8_t throttleNormalized = utility_normalizeRange_u8(adc_getLatestThrottle_percent(), MODE_ELECTRICTHROTTLE_TPSRANGE_START, MODE_ELECTRICTHROTTLE_TPSRANGE_END);
 
 		//apply easing curve to throttle
-		throttleNormalized = utility_ease_out_circ_u8(throttleNormalized);
+		// throttleNormalized = utility_ease_out_circ_u8(throttleNormalized);
+		throttleNormalized = utility_ease_out_cubic_u8(throttleNormalized);
 
 		//scale back from [0, 255] to [ASSIST_MIN, ASSIST_MAX]
 		throttleNormalized = utility_scaleRange_u8(throttleNormalized, ASSIST_MIN, ASSIST_MAX);

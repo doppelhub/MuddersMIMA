@@ -9,4 +9,6 @@
 
     uint8_t utility_ease_out_circ_u8(uint8_t x);
 
+    uint8_t utility_ease_out_cubic_u8(uint8_t t);
+
 #endif

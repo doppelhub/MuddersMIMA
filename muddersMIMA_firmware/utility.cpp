@@ -15,7 +15,6 @@ uint16_t utility_sqrt_u16(uint16_t x)
         }
         base >>= 1; // shift 1 digit to the right = divide by 2
     }
-    				Serial.println(y);
     return y;
 }
 
@@ -43,4 +42,15 @@ uint8_t utility_ease_out_circ_u8(uint8_t x)
     uint16_t y  = utility_sqrt_u16(65025 - sq);
 
     return (uint8_t)y;             // back to 0..255
+}
+
+uint8_t utility_ease_out_cubic_u8(uint8_t t)
+{
+    uint16_t inv = 255 - t;          // (1 - t)
+    uint32_t inv3 = (uint32_t)inv * inv * inv; // (1 - t)^3, up to ~16M
+
+    // Scale back to 0–255 range
+    uint16_t eased = 255 - (inv3 >> 16);
+
+    return (uint8_t)eased;
 }
