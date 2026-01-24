@@ -18,6 +18,7 @@
 
   //Define LiBCM system include files.  Note: Do not alter order.
   #include "config.h"
+  #include "utility.h"
   #include "cpu_map.h"
   #include "debugUSB.h"
   #include "gpio.h"

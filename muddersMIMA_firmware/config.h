@@ -18,7 +18,7 @@
 
 	//basically the "deadzones" of the throttle position sensor
 	#define MODE_ELECTRICTHROTTLE_TPSRANGE_START 10 //value from adc_getECM_TPS_percent that is treated as 0% throttle
-	#define MODE_ELECTRICTHROTTLE_TPSRANGE_END 90 //value from adc_getECM_TPS_percent that is treated as 100% throttle
+	#define MODE_ELECTRICTHROTTLE_TPSRANGE_END 80 //value from adc_getECM_TPS_percent that is treated as 100% throttle
 
 	//choose behavior when three position switch...
 	//...is in the '0' position

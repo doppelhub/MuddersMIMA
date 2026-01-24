@@ -135,18 +135,21 @@ void mode_electricThrottle(void)
 	{
 		#define ASSIST_MIN 50
 		#define ASSIST_MAX 90
-		//Map a value x from range [a, b] into [c, d]:
-		//y = c + (x - a) * (d - c) / (b - a);
-		//Linear Interpolate from
-		// [MODE_ELECTRICTHROTTLE_TPSRANGE_START, MODE_ELECTRICTHROTTLE_TPSRANGE_END]
-		// to
-		// [ASSIST_MIN, ASSIST_MAX]
-		uint8_t assistAmount = ASSIST_MIN + (adc_getLatestThrottle_percent() - MODE_ELECTRICTHROTTLE_TPSRANGE_START) * (ASSIST_MAX - ASSIST_MIN) / (MODE_ELECTRICTHROTTLE_TPSRANGE_END - MODE_ELECTRICTHROTTLE_TPSRANGE_START);
-		mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, assistAmount); //at this point, assistAmount will be between ASSIST_MIN and ASSIST_MAX
+		// uint8_t assistAmount = ASSIST_MIN + (adc_getLatestThrottle_percent() - MODE_ELECTRICTHROTTLE_TPSRANGE_START) * (ASSIST_MAX - ASSIST_MIN) / (MODE_ELECTRICTHROTTLE_TPSRANGE_END - MODE_ELECTRICTHROTTLE_TPSRANGE_START);
+		
+		//normalize throttle input to [0, 255]
+		uint8_t throttleNormalized = utility_normalizeRange_u8(adc_getLatestThrottle_percent(), MODE_ELECTRICTHROTTLE_TPSRANGE_START, MODE_ELECTRICTHROTTLE_TPSRANGE_END);
+
+		//apply easing curve to throttle
+		throttleNormalized = utility_ease_out_circ_u8(throttleNormalized);
+
+		//scale back from [0, 255] to [ASSIST_MIN, ASSIST_MAX]
+		throttleNormalized = utility_scaleRange_u8(throttleNormalized, ASSIST_MIN, ASSIST_MAX);
+
+		mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, throttleNormalized); //at this point, assistAmount will be between ASSIST_MIN and ASSIST_MAX
 	}
 	
-	//everything else is handled by mode 1.  The joystick is disabled when throttling
-	//it would be possible to let the higher number take priority, throttle > joystick or vice versa
+	//DezTODO: let the higher number take priority, throttle > joystick or vice versa
 	mode_manualAssistRegen_withAutoStartStop(throttleIsPastThreshold);
 }
 
