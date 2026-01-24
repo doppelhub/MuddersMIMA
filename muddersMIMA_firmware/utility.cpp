@@ -15,14 +15,15 @@ uint16_t utility_sqrt_u16(uint16_t x)
         }
         base >> 1; // shift 1 digit to the right = divide by 2
     }
+    				Serial.println(y);
     return y;
 }
 
 //normalize a number from [MIN, MAX] to [0, 255]
 uint8_t utility_normalizeRange_u8(uint8_t x, uint8_t min, uint8_t max)
 {
-    if(x > max) { return max; }
-    if(x < min) { return min; }
+    if(x > max) { return 255; }
+    if(x < min) { return 0; }
 
     //               base at 0         //divide by total range 
     return (uint16_t)(x - min) * 255 / (max - min);
