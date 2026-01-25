@@ -128,28 +128,36 @@ void mode_manualAssistRegen_withAutoStartStop(bool disableJoystick = false)
 //	-small batteries
 void mode_electricThrottle(void)
 {
-	bool throttleIsPastThreshold = adc_getLatestThrottle_percent() > MODE_ELECTRICTHROTTLE_TPSRANGE_START;
+	//throttle is past threshold (deadzone)
+	bool assist = adc_getLatestThrottle_percent() > MODE_ELECTRICTHROTTLE_TPSRANGE_START;
 
-	if(throttleIsPastThreshold)
+	if(assist)
 	{
 		#define ASSIST_MIN 50
 		#define ASSIST_MAX 90
 		
 		//normalize throttle input to [0, 255]
-		uint8_t throttleNormalized = utility_normalizeRange_u8(adc_getLatestThrottle_percent(), MODE_ELECTRICTHROTTLE_TPSRANGE_START, MODE_ELECTRICTHROTTLE_TPSRANGE_END);
+		uint8_t assistAmount = utility_normalizeRange_u8(adc_getLatestThrottle_percent(), MODE_ELECTRICTHROTTLE_TPSRANGE_START, MODE_ELECTRICTHROTTLE_TPSRANGE_END);
 
 		//apply easing curve to throttle
-		// throttleNormalized = utility_ease_out_circ_u8(throttleNormalized);
-		throttleNormalized = utility_ease_out_cubic_u8(throttleNormalized);
+		// assistAmount = utility_ease_out_circ_u8(assistAmount); //this curve feels too touchy
+		assistAmount = utility_ease_out_cubic_u8(assistAmount);
 
 		//scale back from [0, 255] to [ASSIST_MIN, ASSIST_MAX]
-		throttleNormalized = utility_scaleRange_u8(throttleNormalized, ASSIST_MIN, ASSIST_MAX);
+		assistAmount = utility_scaleRange_u8(assistAmount, ASSIST_MIN, ASSIST_MAX);
 
-		mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, throttleNormalized); //at this point, assistAmount will be between ASSIST_MIN and ASSIST_MAX
+		//if the assist amount is less than the joystick, dont set the assist signal here, let mode 1 handle that
+		if(assistAmount < adc_getLatestJoystick_percent())
+		{ assist = false; }
+		else
+		{
+			//apply assistAmount- this value will be between ASSIST_MIN and ASSIST_MAX
+			mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, assistAmount);
+		}
 	}
 	
-	//DezTODO: let the higher number take priority, throttle > joystick or vice versa
-	mode_manualAssistRegen_withAutoStartStop(throttleIsPastThreshold);
+	//inherit all behaviour from mode 1
+	mode_manualAssistRegen_withAutoStartStop(assist);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
