@@ -33,7 +33,7 @@ void mode_manualAssistRegen_ignoreECM(void)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void mode_manualAssistRegen_withAutoStartStop(bool disableJoystick = false)
+void mode_manualAssistRegen_withAutoStartStop(uint16_t assist_override = 0)
 {
 	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 
@@ -69,16 +69,16 @@ void mode_manualAssistRegen_withAutoStartStop(bool disableJoystick = false)
 			//replace actual joystick position with previously stored value
 			joystick_percent = joystick_percent_stored;
 		}
-		
-		if(!disableJoystick)
-		{
-			//send assist/idle/regen value to MCM
-			if     (joystick_percent < JOYSTICK_MIN_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too low
-			else if(joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN,  joystick_percent);             } //manual regen
-			else if(joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   joystick_percent);             } //standby
-			else if(joystick_percent < JOYSTICK_MAX_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, joystick_percent);             } //manual assist
-			else                                                     { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too high
-		}
+
+		//use the highest assist value between joystick_percent and assist_override
+		joystick_percent = (joystick_percent > assist_override) ? joystick_percent : assist_override;
+
+		//send assist/idle/regen value to MCM
+		if     (joystick_percent < JOYSTICK_MIN_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too low
+		else if(joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN,  joystick_percent);             } //manual regen
+		else if(joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   joystick_percent);             } //standby
+		else if(joystick_percent < JOYSTICK_MAX_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, joystick_percent);             } //manual assist
+		else                                                     { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too high
 
 	}
 	else if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_PRESTART)
@@ -115,49 +115,39 @@ void mode_manualAssistRegen_withAutoStartStop(bool disableJoystick = false)
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 //GOAL: Make driving the Insight as a Plug-In-Hybrid easier
+//      by eliminating the need to use the joystick when you need to quickly accelerate
 //Description:
 //	Pressing the throttle will provide powerful electric assist
 //	Inherits the same functionality as mode_manualAssistRegen_withAutoStartStop (mode_1)
 //		(the joystick still works)
 //USE CASES:
 //	-turning on to a busy road
-// 	-starting on steep hills
-// 	-driving your 78hp insight like the little racecar it is
+// 	-flooring it in 2nd gear (insight = racecar)
 //WHAT THIS IS NOT USEFUL FOR:
 //	-long trips
 //	-small batteries
 void mode_electricThrottle(void)
 {
-	//throttle is past threshold (deadzone)
-	bool assist = adc_getLatestThrottle_percent() > MODE_ELECTRICTHROTTLE_TPSRANGE_START;
+	uint8_t assist_amount = 0;
 
-	if(assist)
+	//only provide assist if throttle is past threshold (deadzone)
+	if(adc_getLatestThrottle_percent() > MODE_ELECTRICTHROTTLE_TPSRANGE_START)
 	{
 		#define ASSIST_MIN 50
 		#define ASSIST_MAX 90
 		
 		//normalize throttle input to [0, 255]
-		uint8_t assistAmount = utility_normalizeRange_u8(adc_getLatestThrottle_percent(), MODE_ELECTRICTHROTTLE_TPSRANGE_START, MODE_ELECTRICTHROTTLE_TPSRANGE_END);
+		assist_amount = utility_normalizeRange_u8(adc_getLatestThrottle_percent(), MODE_ELECTRICTHROTTLE_TPSRANGE_START, MODE_ELECTRICTHROTTLE_TPSRANGE_END);
 
 		//apply easing curve to throttle
-		// assistAmount = utility_ease_out_circ_u8(assistAmount); //this curve feels too touchy
-		assistAmount = utility_ease_out_cubic_u8(assistAmount);
+		assist_amount = MODE_ELECTRICTHROTTLE_ASSISTCURVE
 
 		//scale back from [0, 255] to [ASSIST_MIN, ASSIST_MAX]
-		assistAmount = utility_scaleRange_u8(assistAmount, ASSIST_MIN, ASSIST_MAX);
-
-		//if the assist amount is less than the joystick, dont set the assist signal here, let mode 1 handle that
-		if(assistAmount < adc_getLatestJoystick_percent())
-		{ assist = false; }
-		else
-		{
-			//apply assistAmount- this value will be between ASSIST_MIN and ASSIST_MAX
-			mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, assistAmount);
-		}
+		assist_amount = utility_scaleRange_u8(assist_amount, ASSIST_MIN, ASSIST_MAX);
 	}
 	
 	//inherit all behaviour from mode 1
-	mode_manualAssistRegen_withAutoStartStop(assist);
+	mode_manualAssistRegen_withAutoStartStop(assist_amount);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
