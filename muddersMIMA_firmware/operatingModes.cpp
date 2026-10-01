@@ -33,7 +33,7 @@ void mode_manualAssistRegen_ignoreECM(void)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void mode_manualAssistRegen_withAutoStartStop(void)
+void mode_manualAssistRegen_withAutoStartStop(uint16_t assist_override = 0)
 {
 	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
 
@@ -69,7 +69,10 @@ void mode_manualAssistRegen_withAutoStartStop(void)
 			//replace actual joystick position with previously stored value
 			joystick_percent = joystick_percent_stored;
 		}
-		
+
+		//use the highest assist value between joystick_percent and assist_override
+		joystick_percent = (joystick_percent > assist_override) ? joystick_percent : assist_override;
+
 		//send assist/idle/regen value to MCM
 		if     (joystick_percent < JOYSTICK_MIN_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too low
 		else if(joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN,  joystick_percent);             } //manual regen
@@ -107,6 +110,44 @@ void mode_manualAssistRegen_withAutoStartStop(void)
 	}
 
 	//JTS2doLater: New feature: When the key is on and the engine is off, pushing momentary button starts engine.
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+//GOAL: Make driving the Insight as a Plug-In-Hybrid easier
+//      by eliminating the need to use the joystick when you need to quickly accelerate
+//Description:
+//	Pressing the throttle will provide powerful electric assist
+//	Inherits the same functionality as mode_manualAssistRegen_withAutoStartStop (mode_1)
+//		(the joystick still works)
+//USE CASES:
+//	-turning on to a busy road
+// 	-flooring it in 2nd gear (insight = racecar)
+//WHAT THIS IS NOT USEFUL FOR:
+//	-long trips
+//	-small batteries
+void mode_electricThrottle(void)
+{
+	uint8_t assist_amount = 0;
+
+	//only provide assist if throttle is past threshold (deadzone)
+	if(adc_getLatestThrottle_percent() > MODE_ELECTRICTHROTTLE_TPSRANGE_START)
+	{
+		#define ASSIST_MIN 50
+		#define ASSIST_MAX 90
+		
+		//normalize throttle input to [0, 255]
+		assist_amount = utility_normalizeRange_u8(adc_getLatestThrottle_percent(), MODE_ELECTRICTHROTTLE_TPSRANGE_START, MODE_ELECTRICTHROTTLE_TPSRANGE_END);
+
+		//apply easing curve to throttle
+		assist_amount = MODE_ELECTRICTHROTTLE_ASSISTCURVE
+
+		//scale back from [0, 255] to [ASSIST_MIN, ASSIST_MAX]
+		assist_amount = utility_scaleRange_u8(assist_amount, ASSIST_MIN, ASSIST_MAX);
+	}
+	
+	//inherit all behaviour from mode 1
+	mode_manualAssistRegen_withAutoStartStop(assist_amount);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
