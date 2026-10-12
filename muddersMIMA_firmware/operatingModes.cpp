@@ -6,6 +6,8 @@
 
 uint8_t joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;
 bool useStoredJoystickValue = NO; //JTS2doLater: I'm not convinced this is required
+uint8_t previous_assist = 50;
+uint8_t previous_MAP = 50;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -221,7 +223,48 @@ void mode_INWORK_PHEV_mudder(void)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+//Pedal Controlled Proportional Assist.
+//Automatic assist/regen using pedal position and engine signals
+//(No joystick required)
+//requires power user cable from Licontrol to vehicle ECU signals
 
+void mode_proportional_auto_assist(void)
+{
+	brakeLights_setControlMode(BRAKE_LIGHT_MONITOR_ONLY);
+	uint8_t ECM_CMDPWR_percent = ecm_getCMDPWR_percent();
+	uint8_t latestVehicleMPH = engineSignals_getLatestVehicleMPH();
+	uint8_t TPS_percent = adc_getECM_TPS_percent()-tpsoffset; 
+	uint8_t MAP_sensor = adc_getECM_MAP_percent(); 
+	
+	 if      	(MAP_sensor > previous_MAP) { MAP_sensor = previous_MAP + 1; } //prevents p1440 caused by rapid increase of MAP
+     else if    (MAP_sensor < previous_MAP) { MAP_sensor = previous_MAP - 1; } //prevents p1440 caused by rapid decrease of MAP
+	 previous_MAP = MAP_sensor;	
+	
+	uint16_t latestVehicleRPM = engineSignals_getLatestRPM();
+	uint8_t regen_demand = 50-(sqrt(latestVehicleRPM-minrpm)*sqrt(latestVehicleMPH)/regenfactor);
+	uint8_t regen_max = max(10,regen_demand);
+	uint8_t assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor));
+	uint8_t assist = min(90,assist_demand);
+	uint8_t SOC = spiToLiBCM_getLiBCM_SoC_percent();
+
+     if      	(assist > previous_assist) { assist = previous_assist + 1; } //prevents p1440 caused by rapid increase of assist demand
+     else if    (assist < previous_assist) { assist = previous_assist - 1; } //prevents p1440 caused by rapid decrease of assist demand
+	 previous_assist = assist;
+
+	if (latestVehicleMPH > maxmph) {latestVehicleMPH = 1;}  //safeguard
+	
+		if 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)    { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, assist); }
+		else if	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)    { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, 50); }
+		else if	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE)   	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, assist); }
+		else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) &&  
+				(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_OFF)) { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, 50); }
+		else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) && 
+		        (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON))	{ mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, regen_max); }
+		else /* (ECM requesting everyting else) */                		{ mcm_passUnmodifiedSignals_fromECM(); } 			
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
 void operatingModes_handler(void)
 {
 	uint8_t toggleState = gpio_getButton_toggle();
