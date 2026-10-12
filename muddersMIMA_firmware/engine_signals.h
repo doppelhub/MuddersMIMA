@@ -5,6 +5,8 @@
 	#define engine_signals_h
 
 	#define ONE_MINUTE_IN_MICROSECONDS 60E6
+	#define NUM_ENGINE_REVOLUTIONS_PER_CYCLE 2
+	#define NUM_TACHOMETER_PULSES_PER_CYCLE 3
 	
 	void engineSignals_begin(void);
 

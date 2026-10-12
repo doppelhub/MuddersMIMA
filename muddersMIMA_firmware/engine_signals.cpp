@@ -20,7 +20,7 @@ ISR(PCINT0_vect)
 
 		uint32_t periodBetweenTicks_us = tachometerTick_now_us - tachometerTick_previous_us;
 
-		latestEngineRPM = ONE_MINUTE_IN_MICROSECONDS / periodBetweenTicks_us;
+		latestEngineRPM = (ONE_MINUTE_IN_MICROSECONDS * NUM_ENGINE_REVOLUTIONS_PER_CYCLE / NUM_TACHOMETER_PULSES_PER_CYCLE) / periodBetweenTicks_us;
 
 		tachometerTick_previous_us = tachometerTick_now_us;
 	}
@@ -34,7 +34,10 @@ uint16_t engineSignals_getLatestRPM(void) { return latestEngineRPM; }
 
 void engineSignals_begin(void)
 {
+	cli();
 	PCMSK0 = (1<<PCINT0); //only pin D8 will generate a pin change interrupt on ISR PCINT0_vect (which supports D8:D13)
+	PCICR |= (1<<PCIE0); //enable pin change interrupts on port B (D8:D13)
+	sei();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

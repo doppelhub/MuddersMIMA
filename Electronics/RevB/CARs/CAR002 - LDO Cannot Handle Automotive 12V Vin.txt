@@ -1,0 +1,9 @@
+The official Arduino Nano's onboard UA78M05 LDO is rated to handle at least 35 Vmax(abs)...
+...unfortunately, 3rd party Elegoo Nanos use the AMS1117 voltage regulator, which is only rated to 15.7 Vmax(abs) as used on LiControl... much too low for an automotive application.
+
+In my testing (both then and now), the AMS1117 voltage regulator has no issues maintaining a stable output voltage all the way up to 35 Vin(continuous). So then while LiControl's regulator is only specified to handle up to 15.7 volts, it appears to handle more than twice that voltage in practice. Obviously you shouldn't use parts above their specified maximum limits, as they are much more likely to fail when operating out of spec.
+
+I suspect that most LiControl units out there will never experience this issue. And for those that do fail:
+-the failure is graceful, and poses no safety issues, and;
+-I will replace your LiControl circuit board for free, and;
+-I will fix this design defect in a future board spin.
