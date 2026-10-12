@@ -4,235 +4,147 @@
 
 #include "muddersMIMA.h"
 
-uint8_t joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;
-bool useStoredJoystickValue = NO; //JTS2doLater: I'm not convinced this is required
+uint8_t previous_assist = 50;
+uint8_t previous_MAP = 50;
+uint8_t previous_TPS = 0;
+uint8_t assist_demand = 50;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void mode_OEM(void)
+void mode_OEM(void) ///regen only
 {
-	brakeLights_setControlMode(BRAKE_LIGHT_OEM); 
-	mcm_passUnmodifiedSignals_fromECM();
+	brakeLights_setControlMode(BRAKE_LIGHT_MONITOR_ONLY);
+	uint8_t latestVehicleMPH = engineSignals_getLatestVehicleMPH();
+	uint16_t latestVehicleRPM = engineSignals_getLatestRPM();
+	uint8_t regen_demand = 50-(sqrt(latestVehicleRPM-minrpm)*sqrt(latestVehicleMPH)/regenfactor);
+	uint8_t regen_max = max(10,regen_demand);
+		if 		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST) 	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, 50); }
+		else if	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE)   	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, 50); }
+		else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) &&  
+				(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_OFF)) { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, 50); }
+		else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) && 
+		        (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON))	{ mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, regen_max); }
+		else /* (ECM requesting everyting else) */                		{ mcm_passUnmodifiedSignals_fromECM(); } 		
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+//Pedal Controlled Proportional Assist.
+//Automatic assist/regen using pedal position and engine signals
+//(No joystick required)
+//requires power user cable from Licontrol to vehicle ECU signals
+
+void mode_proportional_auto_assist(void) // full power mode
+{
+	brakeLights_setControlMode(BRAKE_LIGHT_MONITOR_ONLY);
+	uint8_t latestVehicleMPH = engineSignals_getLatestVehicleMPH();
+	uint8_t TPS_percent = adc_getECM_TPS_percent()-tpsoffset; 
+	uint8_t MAP_sensor = adc_getECM_MAP_percent(); 
+	uint16_t latestVehicleRPM = engineSignals_getLatestRPM();
+	
+	if (latestVehicleMPH > maxmph) {latestVehicleMPH = 1;}  //safeguard
+	
+	 if      	(MAP_sensor > previous_MAP) { MAP_sensor = previous_MAP + 1; } 		// smooths engine load increase.
+     else if    (MAP_sensor < previous_MAP) { MAP_sensor = previous_MAP - 1; } 		// smooths engine load decrease.
+	 previous_MAP = MAP_sensor;	
+	
+	 if      	(latestVehicleMPH < 5) { TPS_percent = TPS_percent / 2; } 			//launch control (clutch slip)
+	 else if    (latestVehicleMPH < 15) { TPS_percent = TPS_percent * 3/2; } 		//launch control (wheel slip)
+	 if      	(TPS_percent > previous_TPS) { TPS_percent = previous_TPS + 1; } 	//smooths rapid accelerator pedal application
+	 previous_TPS = TPS_percent;	
+	
+	uint8_t regen_demand = 50-(sqrt(latestVehicleRPM-minrpm)*sqrt(latestVehicleMPH)/regenfactor);
+	uint8_t regen_max = max(10,regen_demand);
+	
+	//reduce low SOC assist	
+	if (mima_battery_soc > 20) 		{ assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor)); } 
+	else if (mima_battery_soc > 19) { assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor/2)); } 
+	else if (mima_battery_soc > 18) { assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor/3)); } 
+	else if (mima_battery_soc > 17) { assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor/4)); } 
+	else if (mima_battery_soc > 16) { assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor/5)); } 
+	else if (mima_battery_soc > 15) { assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor/6)); } 
+	else {assist_demand = (50); } 
+	
+	uint8_t assist = min(90,assist_demand);
+	
+	 
+	 if    		(assist > previous_assist) { assist = previous_assist + 1; } 		//prevents p1440 caused by rapid increase of assist demand
+     else if    (assist < previous_assist) { assist = previous_assist - 1; } 		//prevents p1440 caused by rapid decrease of assist demand
+	 previous_assist = assist;
+	
+	if 		    (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)    	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, assist); }
+		else if	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE)   	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, assist); }
+		else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) &&  
+				(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_OFF)) { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, 50); }
+		else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) && 
+		        (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON))	{ mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, regen_max); }
+		else /* (ECM requesting everyting else) */                		{ mcm_passUnmodifiedSignals_fromECM(); } 
+	
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//low power VERSION
+void mode_backup(void)
+{
+	brakeLights_setControlMode(BRAKE_LIGHT_MONITOR_ONLY);
+	uint8_t latestVehicleMPH = engineSignals_getLatestVehicleMPH();
+	uint8_t TPS_percent = adc_getECM_TPS_percent()-tpsoffset; 
+	uint8_t MAP_sensor = adc_getECM_MAP_percent(); 
+	uint16_t latestVehicleRPM = engineSignals_getLatestRPM();
+	
+	if (latestVehicleMPH > maxmph) {latestVehicleMPH = 1;}  //safeguard
+	
+	 if      	(MAP_sensor > previous_MAP) { MAP_sensor = previous_MAP + 1; } 		// smooths engine load increase.
+     else if    (MAP_sensor < previous_MAP) { MAP_sensor = previous_MAP - 1; } 		// smooths engine load decrease.
+	 previous_MAP = MAP_sensor;	
+	
+
+	 if      	(latestVehicleMPH < 5) { TPS_percent = TPS_percent / 2; } 			//launch control (clutch slip)
+	 else if    (latestVehicleMPH < 15) { TPS_percent = TPS_percent * 3/2; } 		//launch control (wheel slip)
+	 if      	(TPS_percent > previous_TPS) { TPS_percent = previous_TPS + 1; } 	//smooths rapid accelerator pedal application
+	 previous_TPS = TPS_percent;	
+	
+	
+	uint8_t regen_demand = 50-(sqrt(latestVehicleRPM-minrpm)*sqrt(latestVehicleMPH)/regenfactor);
+	uint8_t regen_max = max(10,regen_demand);
+	 
+	//reduce low SOC assist	
+	if (mima_battery_soc > 20) 		{ assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor/2)); } 
+	else if (mima_battery_soc > 19) { assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor/3)); } 
+	else if (mima_battery_soc > 18) { assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor/4)); } 
+	else if (mima_battery_soc > 17) { assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor/5)); } 
+	else if (mima_battery_soc > 16) { assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor/6)); } 
+	else if (mima_battery_soc > 15) { assist_demand = (50+(sqrt(latestVehicleMPH)*sqrt(TPS_percent)*sqrt(MAP_sensor)/assistfactor/7)); } 
+	else {assist_demand = (50); } 
+	
+	uint8_t assist = min(90,assist_demand);
+	
+	 
+	 if      	(assist > previous_assist) { assist = previous_assist + 1; } 		//prevents p1440 caused by rapid increase of assist demand
+     else if    (assist < previous_assist) { assist = previous_assist - 1; } 		//prevents p1440 caused by rapid decrease of assist demand
+	 previous_assist = assist;
+	
+	if 		    (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)    { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, assist); }
+		else if	(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE)   	{ mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, assist); }
+		else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) &&  
+				(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_OFF)) { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, 50); }
+		else if	((ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) && 
+		        (gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON))	{ mcm_setAllSignals(MAMODE1_STATE_IS_REGEN, regen_max); }
+		else /* (ECM requesting everyting else) */                		{ mcm_passUnmodifiedSignals_fromECM(); } 
+	
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-//LiControl completely ignores ECM signals (including autostop, autostart, prestart, etc)
-void mode_manualAssistRegen_ignoreECM(void)
-{
-	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
-
-	uint16_t joystick_percent = adc_getLatestJoystick_percent();
-
-	if     (joystick_percent < JOYSTICK_MIN_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too low
-	else if(joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN,  joystick_percent);             } //manual regen
-	else if(joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   joystick_percent);             } //standby
-	else if(joystick_percent < JOYSTICK_MAX_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, joystick_percent);             } //manual assist
-	else                                                     { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too high
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-void mode_manualAssistRegen_withAutoStartStop(void)
-{
-	brakeLights_setControlMode(BRAKE_LIGHT_AUTOMATIC);
-
-	if( (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN ) ||
-		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE  ) ||
-		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)  )
-	{
-		//ECM is sending assist, idle, or regen signal...
-		//but we're in manual mode, so use joystick value instead (either previously stored or value right now)
-
-		uint16_t joystick_percent = adc_getLatestJoystick_percent();
-
-		if(gpio_getButton_momentary() == BUTTON_PRESSED)
-		{
-			//store joystick value when button is pressed
-			joystick_percent_stored = joystick_percent;
-			useStoredJoystickValue = YES;
-		}
-
-		//disable stored joystick value if user is braking
-		//JTS2doLater: Add clutch disable
-		if(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)
-		{
-			useStoredJoystickValue = NO;
-			joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;
-		} 
-
-		//use stored joystick value if conditions are right
-		if( (useStoredJoystickValue == YES                ) && //user previously pushed button
-			(joystick_percent > JOYSTICK_NEUTRAL_MIN_PERCENT) && //joystick is neutral
-			(joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT)  ) //joystick is neutral
-		{
-			//replace actual joystick position with previously stored value
-			joystick_percent = joystick_percent_stored;
-		}
-		
-		//send assist/idle/regen value to MCM
-		if     (joystick_percent < JOYSTICK_MIN_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too low
-		else if(joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN,  joystick_percent);             } //manual regen
-		else if(joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   joystick_percent);             } //standby
-		else if(joystick_percent < JOYSTICK_MAX_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, joystick_percent);             } //manual assist
-		else                                                     { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too high
-
-	}
-	else if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_PRESTART)
-	{
-		//prevent DCDC disable when user regen-stalls car
-
-		//DCDC converter must be disabled when the key first turns on.
-		//Otherwise, the DCDC input current prevents the HVDC capacitors from pre-charging through the precharge resistor.
-		//This can cause intermittent P1445, particularly after rapidly turning key off and on.
-
-		//Therefore, we need to honor the ECM's PRESTART request for the first few seconds after keyON (so the HVDC bus voltage can charge to the pack voltage).
-
-		//JTS2doNow: if SoC too low (get from LiBCM), pass through unmodified signal (which will disable DCDC) 
-		if(millis() < (time_latestKeyOn_ms() + PERIOD_AFTER_KEYON_WHERE_PRESTART_ALLOWED_ms)) { mcm_passUnmodifiedSignals_fromECM(); } //key hasn't been on long enough
-		else { mcm_setAllSignals(MAMODE1_STATE_IS_AUTOSTOP, JOYSTICK_NEUTRAL_NOM_PERCENT); } //JTS2doLater: This prevents user from manually assist-starting IMA
-
-		//clear stored assist/idle/regen setpoint
-		joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;
-		useStoredJoystickValue = NO;
-	}
-	else //ECM is sending autostop, start, or undefined signal
-	{
-		//pass these signals through unmodified (so autostop works properly)
-		mcm_passUnmodifiedSignals_fromECM();
-
-		//clear stored assist/idle/regen setpoint
-		joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;
-		useStoredJoystickValue = NO;
-	}
-
-	//JTS2doLater: New feature: When the key is on and the engine is off, pushing momentary button starts engine.
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-//PHEV mode
-//JTS2doNow: implement manual regen
-void mode_INWORK_blendAssist_joystickRegen(void)
-{
-	brakeLights_setControlMode(BRAKE_LIGHT_OEM);
-
-	if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE, JOYSTICK_NEUTRAL_NOM_PERCENT); } //ignore regen request
-	else /* (ECM not requesting regen) */                { mcm_passUnmodifiedSignals_fromECM(); } //pass all other signals through
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-//GOAL: All OEM signals are passed through unmodified, except:
-//CMDPWR assist
-	//LiControl uses strongest assist request (user or ECM), except that;
-	//pressing the momentary button stores the joystick position (technically the value is stored on button release)
-	//after pressing the momentary button, all ECM assist requests are ignored until the user either brakes or (temporarily) changes modes   
-	//manual joystick assist requests are allowed even after pushing momentary button; stored value resumes once joystick is neutral again
-//CMDPWR regen
-	//LiControl ignores ECM regen requests, unless user is braking
-	//when braking and joystick is neutral, LiControl uses ECM regen request
-	//manual joystick regen request always overrides ECM regen request
-//MAMODE1 prestart
-	//modified to always enable DCDC when key is on
-void mode_INWORK_PHEV_mudder(void)
-{
-	brakeLights_setControlMode(BRAKE_LIGHT_MONITOR_ONLY); //JTS2doLater: if possible, add strong regen brake lights
-
-	if( (ecm_getMAMODE1_state() == MAMODE1_STATE_IS_REGEN ) ||
-		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_IDLE  ) ||
-		(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_ASSIST)  )
-	{
-		uint8_t joystick_percent = adc_getLatestJoystick_percent();
-		uint8_t ECM_CMDPWR_percent = ecm_getCMDPWR_percent();
-
-		//choose strongest assist request (user or ECM)
-		if (ECM_CMDPWR_percent > joystick_percent) { joystick_percent = ECM_CMDPWR_percent; }
-
-		//store joystick value when user presses momentary button
-		if(gpio_getButton_momentary() == BUTTON_PRESSED)
-		{
-			joystick_percent_stored = joystick_percent;
-			useStoredJoystickValue = YES;
-		}
-
-		//clear stored joystick value when user presses brake pedal
-		if(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON) //JTS2doLater: Add clutch disable
-		{
-			useStoredJoystickValue = NO;
-			joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;	
-		} 
-
-		//Use ECM regen request when user is braking AND joystick is neutral
-		if ((joystick_percent > JOYSTICK_NEUTRAL_MIN_PERCENT)     && //joystick is neutral
-			(joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT)     && //joystick is neutral
-			(gpio_getBrakePosition_bool() == BRAKE_LIGHTS_ARE_ON)  ) //user is braking
-		{
-			//while braking, replace neutral joystick position with ECM regen request
-			joystick_percent = ecm_getCMDPWR_percent();
-		}
-
-		//use stored joystick value if conditions are right
-		if( (useStoredJoystickValue == YES                  ) && //user previously pushed button
-			(joystick_percent > JOYSTICK_NEUTRAL_MIN_PERCENT) && //joystick is neutral
-			(joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT)  ) //joystick is neutral
-		{
-			//replace actual joystick position with previously stored value
-			joystick_percent = joystick_percent_stored;
-		}
-		
-		//send assist/idle/regen value to MCM
-		if     (joystick_percent < JOYSTICK_MIN_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too low
-		else if(joystick_percent < JOYSTICK_NEUTRAL_MIN_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_REGEN,  joystick_percent);             } //manual regen
-		else if(joystick_percent < JOYSTICK_NEUTRAL_MAX_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   joystick_percent);             } //standby
-		else if(joystick_percent < JOYSTICK_MAX_ALLOWED_PERCENT) { mcm_setAllSignals(MAMODE1_STATE_IS_ASSIST, joystick_percent);             } //manual assist
-		else                                                     { mcm_setAllSignals(MAMODE1_STATE_IS_IDLE,   JOYSTICK_NEUTRAL_NOM_PERCENT); } //signal too high
-
-	}
-	else if(ecm_getMAMODE1_state() == MAMODE1_STATE_IS_PRESTART)
-	{
-		//prevent DCDC disable when user regen-stalls car
-
-		//DCDC converter must be disabled when the key first turns on.
-		//Otherwise, the DCDC input current prevents the HVDC capacitors from pre-charging through the precharge resistor.
-		//This can cause intermittent P1445, particularly after rapidly turning key off and on.
-
-		//Therefore, we need to honor the ECM's PRESTART request for the first few seconds after keyON (so the HVDC bus voltage can charge to the pack voltage).
-
-		//JTS2doNow: if SoC too low (get from LiBCM), pass through unmodified signal (which will disable DCDC) 
-		if(millis() < (time_latestKeyOn_ms() + PERIOD_AFTER_KEYON_WHERE_PRESTART_ALLOWED_ms)) { mcm_passUnmodifiedSignals_fromECM(); } //key hasn't been on long enough
-		else { mcm_setAllSignals(MAMODE1_STATE_IS_AUTOSTOP, JOYSTICK_NEUTRAL_NOM_PERCENT); } //JTS2doLater: This prevents user from manually assist-starting IMA
-
-		//clear stored assist/idle/regen setpoint
-		joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;
-		useStoredJoystickValue = NO;
-	}
-	else //ECM is sending autostop, start, or undefined signal
-	{
-		//pass these signals through unmodified (so autostop works properly)
-		mcm_passUnmodifiedSignals_fromECM();
-
-		//clear stored assist/idle/regen setpoint
-		joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;
-		useStoredJoystickValue = NO;
-	}
-
-	//JTS2doLater: New feature: When the key is on and the engine is off, pushing momentary button starts engine.
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
 
 void operatingModes_handler(void)
 {
 	uint8_t toggleState = gpio_getButton_toggle();
 	static uint8_t toggleState_previous = TOGGLE_UNDEFINED;
-
-	if(toggleState != toggleState_previous)
-	{
-		//clear previously stored joystick value (from the last time we were in manual mode)
-		joystick_percent_stored = JOYSTICK_NEUTRAL_NOM_PERCENT;
-		useStoredJoystickValue = NO;
-	}
 
 	if     (toggleState == TOGGLE_POSITION0) { MODE0_BEHAVIOR(); } //see #define substitutions in config.h
 	else if(toggleState == TOGGLE_POSITION1) { MODE1_BEHAVIOR(); }
